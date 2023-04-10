@@ -26,7 +26,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
                    "where users.gender = :gender and addresses.country = :country", nativeQuery = true)
     List<Employee> findByGenderAndCountry(String gender, String country);
 
-    @Query("select e from Employee e join e.addresses a where a.addressHasActive = true and a.country = :country")
+    @Query("select e from Employee e join e.addresses a where a.isActive = true and a.country = :country")
     Page<Employee> findAllWhoHasActiveAddressesInCountry(String country, Pageable pageable);
 
     //---------------------------------------------------------------

@@ -198,7 +198,7 @@ import java.util.Optional;
     @Override
     @Operation(summary = "Endpoint is used to set value of field IsDeleted=FALSE for all employees whose field " +
                          "IsDeleted=NULL.",
-               description = "Used to setup IsDeleted=FALSE for all employees whose field IsDeleted=NULL.",
+               description = "Create request to setup IsDeleted=FALSE for all employees whose field IsDeleted=NULL.",
                tags = {"Employee"})
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK. Request was handled successfully"),
                            @ApiResponse(responseCode = "204", description = "NO CONTENT. No users to process"),
@@ -211,7 +211,7 @@ import java.util.Optional;
     @Override
     @Operation(summary = "Endpoint is used to set value of field IsPrivate=FALSE for all employees whose field " +
                          "IsPrivate=NULL.",
-               description = "Used to setup IsPrivate=FALSE for all employees whose field IsPrivate=NULL.",
+               description = "Create request to setup IsPrivate=FALSE for all employees whose field IsPrivate=NULL.",
                tags = {"Employee"})
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK. Request was handled successfully"),
                            @ApiResponse(responseCode = "204", description = "NO CONTENT. No users to process"),
@@ -246,8 +246,9 @@ import java.util.Optional;
 
     @Override
     @Operation(summary = "Endpoint is used to send email to employee with a request to confirm their data.",
-               description = "Used to send email to employee with a request to confirm the data.", tags = {"Employee"})
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK. Request was handled successfully"),
+               description = "Create request to send email to employee with a request to confirm the data.",
+               tags = {"Employee"})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK. Email have been sent"),
                            @ApiResponse(responseCode = "204", description = "NO CONTENT. No users to process"),
                            @ApiResponse(responseCode = "400", description = "BAD REQUEST. Invalid input"),
                            @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
@@ -257,7 +258,7 @@ import java.util.Optional;
 
     @Override
     @Operation(summary = "Endpoint is used to set value of field isConfirmed=TRUE for employee.",
-               description = "Used to set value of field isConfirmed=TRUE for employee.", tags = {"Employee"})
+               description = "Create request to set value of field isConfirmed=TRUE for employee.", tags = {"Employee"})
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK. Employee is confirmed"),
                            @ApiResponse(responseCode = "204", description = "NO CONTENT. Employee hasn't been found"),
                            @ApiResponse(responseCode = "400", description = "BAD REQUEST. Invalid input"),
@@ -267,17 +268,60 @@ import java.util.Optional;
     void confirm(Integer id);
 
     @Override
+    @Operation(summary = "Endpoint is used to generate employees.",
+               description = "Create request to generate employees.", tags = {"Employee"})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK. Employees were created"),
+                           @ApiResponse(responseCode = "400", description = "BAD REQUEST. Invalid input"),
+                           @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
+                           @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
+                           @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
     Long generateEmployees(Integer quantity, Boolean clear);
 
     @Override
+    @Operation(summary = "Endpoint is used to mass PUT-update employees.",
+               description = "Create request to mass PUT-update employees.", tags = {"Employee"})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK. Employees were updated"),
+                           @ApiResponse(responseCode = "204",
+                                        description = "NO CONTENT. There are no employees to update"),
+                           @ApiResponse(responseCode = "400", description = "BAD REQUEST. Invalid input"),
+                           @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
+                           @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
+                           @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
     Long employeeMassPutUpdate();
 
     @Override
+    @Operation(summary = "Endpoint is used to mass PATCH-update employees.",
+               description = "Create request to mass PATCH-update employees.", tags = {"Employee"})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK. Employees were updated"),
+                           @ApiResponse(responseCode = "204",
+                                        description = "NO CONTENT. There are no employees to update"),
+                           @ApiResponse(responseCode = "400", description = "BAD REQUEST. Invalid input"),
+                           @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
+                           @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
+                           @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
     Long employeeMassPatchUpdate();
 
     @Override
+    @Operation(summary = "Endpoint is used to get employees whose photos are expired.",
+               description = "Create request to get employees whose photos are expired.",
+               tags = {"Employee"})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK. Employees have been gotten"),
+                           @ApiResponse(responseCode = "204", description = "NO CONTENT. There are no such employees"),
+                           @ApiResponse(responseCode = "400", description = "BAD REQUEST. Invalid input"),
+                           @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
+                           @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
+                           @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
     List<Employee> getEmployeesWithExpiredPhotos();
 
     @Override
+    @Operation(summary = "Endpoint is used to send a notification email to employees whose photos are expired.",
+               description = "Create request to send a notification email to employees whose photos are expired.",
+               tags = {"Employee"})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK. Emails have been sent"),
+                           @ApiResponse(responseCode = "204", description = "NO CONTENT. There are no such employees"),
+                           @ApiResponse(responseCode = "400", description = "BAD REQUEST. Invalid input"),
+                           @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
+                           @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
+                           @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
     void sendEmailToEmployeesWhosePhotoIsExpired();
 }

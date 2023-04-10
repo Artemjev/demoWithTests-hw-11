@@ -29,23 +29,33 @@ public class EmployeePatchDto {
 
     @Email
     @NotNull
+    @Schema(description = "Email address of an employee.", example = "billys@mail.com", required = true)
     public String email;
 
     @Enumerated(EnumType.STRING)
+    @Schema(description = "Gender of an employee. Valid values: M, F.", example = "M", required = true)
     public Gender gender;
 
+    @Schema(description = "Employee address list.")
     public Set<AddressDto> addresses = new HashSet<>();
 
+    @Schema(description = "The time when employee was added. The value is assigned automatically.")
     public LocalDateTime datetime = LocalDateTime.now();
 
+    @Schema(description = "The field indicates whether the employee is deleted.", example = "false", required = true)
     public Boolean isDeleted;
 
+    @Schema(description = "The field indicates whether the employee is private.", example = "false", required = true)
     public Boolean isPrivate;
+
 
     @IsBooleanFieldValidConstraint(value = false,
                                    message = "@IsBooleanFieldValid validation: the status isConfirmed=true can only " +
                                              "be set by employee himself via confirmation email!")
+    @Schema(description = "The field indicates whether the employee's data has been confirmed.", example = "false",
+            required = true)
     public Boolean isConfirmed;
 
+    @Schema(description = "Employee photos set.", required = false)
     public Set<PhotoDto> photos;
 }

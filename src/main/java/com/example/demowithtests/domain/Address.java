@@ -12,7 +12,7 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @Column(name = "address_has_active")
-    private Boolean addressHasActive = Boolean.TRUE;
+    private Boolean isActive = Boolean.TRUE;
     @Column(name = "country")
     private String country;
     @Column(name = "city")

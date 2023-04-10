@@ -281,7 +281,7 @@ public class EmployeeServiceBean implements EmployeeService {
     @Override
     public void massTestUpdate() {
         List<Employee> employees = employeeRepository.findAll();
-        employees.forEach(employee -> employee.setName(LocalDateTime.now().toString()));
+        employees.forEach(employee -> employee.setName(employee.getName() + LocalDateTime.now().toString()));
         employeeRepository.saveAll(employees);
     }
 
@@ -315,7 +315,7 @@ public class EmployeeServiceBean implements EmployeeService {
     }
 
     //----------------------------------------------------------------------------------------------------
-     private Boolean isPhotoExpired(Photo photo) {
+    private Boolean isPhotoExpired(Photo photo) {
         return photo.getAddDate()
                 .plusYears(5)
                 .minusDays(7)
@@ -334,6 +334,7 @@ public class EmployeeServiceBean implements EmployeeService {
         }
         log.info("changePrivateStatus() Service - end: IsPrivate = {}", employee.getIsPrivate());
     }
+
     //----------------------------------------------------------------------------------------------------
     private void changeActiveStatus(Employee employee) {
         log.info("changeActiveStatus() Service - start: id = {}", employee.getId());

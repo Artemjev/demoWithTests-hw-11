@@ -24,7 +24,7 @@ public class EmployeeCreateDto {
     @Schema(description = "Name of an employee.", example = "Billy", required = true)
     public String name;
 
-    @Schema(description = "Name of the country.", example = "England", required = true)
+    @Schema(description = "Name of an country.", example = "England", required = true)
     public String country;
 
     @Email
@@ -33,11 +33,15 @@ public class EmployeeCreateDto {
     public String email;
 
     @Enumerated(EnumType.STRING)
+    @Schema(description = "Gender of an employee. Valid values: M, F.", example = "M", required = true)
     public Gender gender;
 
+    @Schema(description = "Employee address list.")
     public Set<AddressDto> addresses = new HashSet<>();
 
+    @Schema(description = "The time when employee was added. The value is assigned automatically.")
     public LocalDateTime datetime = LocalDateTime.now();
+
 
     /**
      * Суть валидации @IsBooleanFieldValid над этим полем:
@@ -46,9 +50,12 @@ public class EmployeeCreateDto {
     @IsBooleanFieldValidConstraint(value = false,
                                    message = "@IsBooleanFieldValid validation: does it make sense to create" +
                                              " a new employee with status isDeleted=true?!")
+    @Schema(description = "The field indicates whether the employee is deleted.", example = "false", required = true)
     public Boolean isDeleted;
 
+    @Schema(description = "The field indicates whether the employee is private.", example = "false", required = true)
     public Boolean isPrivate;
+
 
     /**
      * Суть валидации @IsBooleanFieldValid над этим полем:
@@ -58,7 +65,11 @@ public class EmployeeCreateDto {
     @IsBooleanFieldValidConstraint(value = false,
                                    message = "@IsBooleanFieldValid validation: the status isConfirmed=true can " +
                                              "only be set by employee himself via confirmation email!")
+    @Schema(description = "The field indicates whether the employee's data has been confirmed.", example = "false",
+            required = true)
     public boolean isConfirmed;
 
+
+    @Schema(description = "Employee photos set.", required = false)
     public Set<PhotoDto> photos;
 }
