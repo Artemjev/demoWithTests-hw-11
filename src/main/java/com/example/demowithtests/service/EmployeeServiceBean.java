@@ -30,27 +30,33 @@ import java.util.stream.Stream;
 @Service
 public class EmployeeServiceBean implements EmployeeService {
 
+    private final String LOG_START = "EmployeeService --> EmployeeServiceBean --> start of method:  ";
+    private final String LOG_END = "EmployeeService --> EmployeeServiceBean --> finish of method:  ";
+
     private final EmployeeRepository employeeRepository;
     private final Mailer mailer;
+
 
     //----------------------------------------------------------------------------------------------------
     @Override
     @CustomValidationAnnotations({MarkedAsDeleted.class})
     public Employee getEmployee(Integer id) {
-        log.debug("getById(Integer id) Service - start: id = {}", id);
+        log.debug(LOG_START + "public Employee getById(Integer id): id = {}", id);
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() ->
                         new NoSuchEmployeeException("There is no employee with ID=" + id + " in database"));
         changeActiveStatus(employee); // todo: перенести эту обработку в асспект по валидации полей!
         changePrivateStatus(employee);
-        log.debug("getById(Integer id) Service - end:  = employee {}", employee);
+        log.debug(LOG_END + "public Employee getById(Integer id): id = {}", id);
         return employee;
     }
 
     //----------------------------------------------------------------------------------------------------
     @Override
     public Employee createEmployee(Employee employee) {
+        log.debug(LOG_START + " : id = {}", id);
         return employeeRepository.save(employee);
+        log.debug(LOG_END + " : id = {}", id);
     }
 
     //----------------------------------------------------------------------------------------------------
@@ -59,6 +65,7 @@ public class EmployeeServiceBean implements EmployeeService {
     @CustomValidationAnnotations({MarkedAsDeleted.class, CountryMatchesAddressesVerification.class})
     public Employee patchEmployee(Integer id, Employee employee) {
         log.debug("updateById(Integer id, Employee employee) Service start: id = {}, employee = {}", employee.getId());
+        log.debug(LOG_START + " : id = {}", id);
         return employeeRepository.findById(id).map(e -> {
                     if (employee.getName() != null && !employee.getName().equals(e.getName())) {
                         e.setName(employee.getName());
@@ -91,6 +98,9 @@ public class EmployeeServiceBean implements EmployeeService {
                     // бегает по полям, проверяетЮ, сетит.
                     // Еще что-то мне подсказывает, что у спринга должна быть какая-то дефолтная реализация подобного(?)
                     log.debug("updateById(Integer id, Employee employee) Service end: e = {}", e);
+
+                    log.debug(LOG_END + " : id = {}", id);
+
                     return employeeRepository.save(e);
                 })
                 .orElseThrow(() ->
@@ -103,6 +113,7 @@ public class EmployeeServiceBean implements EmployeeService {
     @CustomValidationAnnotations({MarkedAsDeleted.class})
     public Employee updateEmployee(Integer id, Employee employee) {
         log.debug("updateEmployee(Integer id, Employee employee) Service start: id={},employee = {}", employee.getId());
+        log.debug(LOG_START + " : id = {}", id);
         return employeeRepository.findById(id).map(e -> {
                     e.setName(employee.getName());
                     e.setEmail(employee.getEmail());
@@ -113,6 +124,7 @@ public class EmployeeServiceBean implements EmployeeService {
                     e.setIsConfirmed(employee.getIsConfirmed());
                     e.setPhotos(employee.getPhotos());
                     log.debug("updateById(Integer id, Employee employee) Service end: e = {}", e);
+                    log.debug(LOG_END + " : id = {}", id);
                     return employeeRepository.save(e);
                 })
                 .orElseThrow(() ->
@@ -123,29 +135,35 @@ public class EmployeeServiceBean implements EmployeeService {
     @Override
     public void deleteEmployee(Integer id) {
         log.info("deleteEmployee(Integer id) Service - start: id = {}", id);
+        log.debug(LOG_START + " : id = {}", id);
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() ->
                         new NoSuchEmployeeException("There is no employee with ID=" + id + " in database"));
         employeeRepository.delete(employee);
         log.info("deleteEmployee(Integer id) Service - end:  = employee {}", employee);
+        log.debug(LOG_END + " : id = {}", id);
     }
 
     //----------------------------------------------------------------------------------------------------
     @Override
     public void markEmployeeAsDeleted(Integer id) {
+        log.debug(LOG_START + " : id = {}", id);
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() ->
                         new NoSuchEmployeeException("There is no employee with ID=" + id + " in database"));
         employee.setIsDeleted(Boolean.TRUE);
         employeeRepository.save(employee);
+        log.debug(LOG_END + " : id = {}", id);
     }
 
     //----------------------------------------------------------------------------------------------------
     @Override
     public List<Employee> getAll() {
         log.debug("getAll() Service - start:");
+        log.debug(LOG_START + " : id = {}", id);
         var employees = employeeRepository.findAll();
         log.debug("getAll() Service - end: size = {}", employees.size());
+        log.debug(LOG_END + " : id = {}", id);
         return employees;
     }
 
@@ -153,21 +171,25 @@ public class EmployeeServiceBean implements EmployeeService {
     @Override
     public Page<Employee> getAllWithPagination(Pageable pageable) {
         log.debug("getAll() Service - start:");
+        log.debug(LOG_START + " : id = {}", id);
         Page<Employee> employees = employeeRepository.findAll(pageable);
         log.debug("getAll() Service - end:  numberOfElements = {}", employees.getNumberOfElements());
+        log.debug(LOG_END + " : id = {}", id);
         return employees;
     }
 
     //----------------------------------------------------------------------------------------------------
     @Override
     public void deleteAll() {
+        log.debug(LOG_START + " : id = {}", id);
         employeeRepository.deleteAll();
+        log.debug(LOG_END + " : id = {}", id);
     }
 
     //----------------------------------------------------------------------------------------------------
     @Override
-    public Page<Employee> getByCountryAndSort(String country, int page, int size, List<String> sortList,
-            String sortOrder) {
+    public Page<Employee> getByCountryAndSort(String country, int page, int size,
+            List<String> sortList, String sortOrder) {
         Pageable pageable = PageRequest.of(page, size, Sort.by(createSortOrder(sortList, sortOrder)));
         return employeeRepository.findByCountry(country, pageable);
     }
@@ -176,6 +198,7 @@ public class EmployeeServiceBean implements EmployeeService {
     @Override
     public List<String> getAllEmployeesCountries() {
         log.info("getAllEmployeeCountry() - start:");
+        log.debug(LOG_START + " : id = {}", id);
         List<Employee> employeeList = employeeRepository.findAll();
         List<String> countries = employeeList.stream()
                 .map(country -> country.getCountry())
@@ -187,6 +210,7 @@ public class EmployeeServiceBean implements EmployeeService {
     //----------------------------------------------------------------------------------------------------
     @Override
     public List<String> getAllEmployeesCountriesSorted() {
+        log.debug(LOG_START + " : id = {}", id);
         List<Employee> employeeList = employeeRepository.findAll();
         return employeeList.stream()
                 .map(Employee::getCountry)
@@ -197,6 +221,7 @@ public class EmployeeServiceBean implements EmployeeService {
     //----------------------------------------------------------------------------------------------------
     @Override
     public Optional<String> getEmails() {
+        log.debug(LOG_START + " : id = {}", id);
         var employeeList = employeeRepository.findAll();
         var emails = employeeList.stream().map(Employee::getEmail).collect(Collectors.toList());
         var opt = emails.stream().filter(s -> s.endsWith(".com")).findFirst().orElse("error?");
@@ -206,6 +231,7 @@ public class EmployeeServiceBean implements EmployeeService {
     //----------------------------------------------------------------------------------------------------
     @Override
     public List<Employee> getEmployeesByGenderAndCountry(Gender gender, String country) {
+        log.debug(LOG_START + " : id = {}", id);
         var employees = employeeRepository.findByGenderAndCountry(gender.toString(), country);
         return employees;
     }
@@ -213,12 +239,14 @@ public class EmployeeServiceBean implements EmployeeService {
     //----------------------------------------------------------------------------------------------------
     @Override
     public Page<Employee> getEmployeesWithActiveAddressesInCountry(String country, Pageable pageable) {
+        log.debug(LOG_START + " : id = {}", id);
         return employeeRepository.findAllWhoHasActiveAddressesInCountry(country, pageable);
     }
 
     //---------------------------------------------------------------------------------------
     @Override
     public List<Employee> handleEmployeesWithIsDeletedFieldIsNull() {
+        log.debug(LOG_START + " : id = {}", id);
         var employees = employeeRepository.queryEmployeeByIsDeletedIsNull();
         for (Employee employee : employees) employee.setIsDeleted(Boolean.FALSE);
         employeeRepository.saveAll(employees);
@@ -228,6 +256,7 @@ public class EmployeeServiceBean implements EmployeeService {
     //---------------------------------------------------------------------------------------
     @Override
     public List<Employee> handleEmployeesWithIsPrivateFieldIsNull() {
+        log.debug(LOG_START + " : id = {}", id);
         var employees = employeeRepository.queryEmployeeByIsPrivateIsNull();
         employees.forEach(employee -> employee.setIsPrivate(Boolean.FALSE));
         employeeRepository.saveAll(employees);
@@ -237,18 +266,21 @@ public class EmployeeServiceBean implements EmployeeService {
     //---------------------------------------------------------------------------------------
     @Override
     public Page<Employee> getAllActive(Pageable pageable) {
+        log.debug(LOG_START + " : id = {}", id);
         return employeeRepository.findAllActive(pageable);
     }
 
     //---------------------------------------------------------------------------------------
     @Override
     public Page<Employee> getAllDeleted(Pageable pageable) {
+        log.debug(LOG_START + " : id = {}", id);
         return employeeRepository.findAllDeleted(pageable);
     }
 
     //---------------------------------------------------------------------------------------
     @Override
     public void sendMailConfirm(Integer id) {
+        log.debug(LOG_START + " : id = {}", id);
         Employee employee = employeeRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
         mailer.send(employee,
                 "Provided data confirmation",
@@ -261,6 +293,7 @@ public class EmployeeServiceBean implements EmployeeService {
     //---------------------------------------------------------------------------------------
     @Override
     public void confirm(Integer id) {
+        log.debug(LOG_START + " : id = {}", id);
         Employee employee = employeeRepository.findById(id).orElseThrow(ResourceNotFoundException::new);
         employee.setIsConfirmed(Boolean.TRUE);
         employeeRepository.save(employee);
@@ -269,6 +302,7 @@ public class EmployeeServiceBean implements EmployeeService {
     //---------------------------------------------------------------------------------------
     @Override
     public void generateEntities(Integer quantity, Boolean clear) {
+        log.debug(LOG_START + " : id = {}", id);
         if (clear) employeeRepository.deleteAll();
         List<Employee> employees = new ArrayList<>(1000);
         for (int i = 0; i < quantity; i++) {
@@ -280,6 +314,7 @@ public class EmployeeServiceBean implements EmployeeService {
     //---------------------------------------------------------------------------------------
     @Override
     public void massTestUpdate() {
+        log.debug(LOG_START + " : id = {}", id);
         List<Employee> employees = employeeRepository.findAll();
         employees.forEach(employee -> employee.setName(employee.getName() + LocalDateTime.now().toString()));
         employeeRepository.saveAll(employees);
@@ -287,6 +322,7 @@ public class EmployeeServiceBean implements EmployeeService {
 
     //----------------------------------------------------------------------------------------------------
     @Override public List<Employee> findEmployeesWithExpiredPhotos() {
+        log.debug(LOG_START + " : id = {}", id);
         List<Employee> resultList = employeeRepository.findAll()
                 .stream()
                 .filter(employee -> employee.getPhotos()
@@ -305,6 +341,7 @@ public class EmployeeServiceBean implements EmployeeService {
 
     //----------------------------------------------------------------------------------------------------
     @Override public void sendEmailToEmployeesWhosePhotoIsExpired() {
+        log.debug(LOG_START + " : id = {}", id);
         findEmployeesWithExpiredPhotos()
                 .stream()
                 .forEach(e -> mailer.send(e, "subject",
@@ -316,6 +353,7 @@ public class EmployeeServiceBean implements EmployeeService {
 
     //----------------------------------------------------------------------------------------------------
     private Boolean isPhotoExpired(Photo photo) {
+        log.debug(LOG_START + " : id = {}", id);
         return photo.getAddDate()
                 .plusYears(5)
                 .minusDays(7)
@@ -327,6 +365,7 @@ public class EmployeeServiceBean implements EmployeeService {
     // todo: хорошо бы, наверное, подобные методы в к какую-то спец.утилиту вынести...
     //----------------------------------------------------------------------------------------------------
     private void changePrivateStatus(Employee employee) {
+        log.debug(LOG_START + " : id = {}", id);
         log.info("changePrivateStatus() Service - start: id = {}", employee.getId());
         if (employee.getIsPrivate() == null) {
             employee.setIsPrivate(Boolean.TRUE);
@@ -337,7 +376,7 @@ public class EmployeeServiceBean implements EmployeeService {
 
     //----------------------------------------------------------------------------------------------------
     private void changeActiveStatus(Employee employee) {
-        log.info("changeActiveStatus() Service - start: id = {}", employee.getId());
+        log.debug(LOG_START + " : id = {}", id);
         if (employee.getIsDeleted() == null) {
             employee.setIsDeleted(Boolean.FALSE);
             employeeRepository.save(employee);
@@ -347,6 +386,7 @@ public class EmployeeServiceBean implements EmployeeService {
 
     //----------------------------------------------------------------------------------------------------
     private List<Sort.Order> createSortOrder(List<String> sortList, String sortDirection) {
+        log.debug(LOG_START + " : id = {}", id);
         List<Sort.Order> sorts = new ArrayList<>();
         Sort.Direction direction;
         for (String sort : sortList) {
