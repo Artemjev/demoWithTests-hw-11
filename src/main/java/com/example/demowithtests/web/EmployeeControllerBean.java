@@ -6,6 +6,7 @@ import com.example.demowithtests.dto.employee.EmployeeCreateDto;
 import com.example.demowithtests.dto.employee.EmployeePatchDto;
 import com.example.demowithtests.dto.employee.EmployeePutDto;
 import com.example.demowithtests.dto.employee.EmployeeReadDto;
+import com.example.demowithtests.dto.photo.PhotoDto;
 import com.example.demowithtests.service.EmployeeService;
 import com.example.demowithtests.util.mapper.EmployeeMapper;
 import lombok.AllArgsConstructor;
@@ -16,7 +17,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.time.Duration;
@@ -38,6 +41,20 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
 
     private final String LOG_START = "EmployeeController --> EmployeeControllerBean --> start of method:  ";
     private final String LOG_END = "EmployeeController --> EmployeeControllerBean --> finish of method:  ";
+
+    //---------------------------------------------------------------------------------------
+
+
+    @PatchMapping("/{id}/uploadPhoto")
+    public ResponseEntity<String> uploadPhoto(@PathVariable Integer id, @RequestParam("file") MultipartFile file) {
+        try {
+            employeeService.addPhoto(id, file);
+            return ResponseEntity.ok().body("Photo has been uploaded successfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Failed to upload photo: " + e.getMessage());
+        }
+    }
 
     //---------------------------------------------------------------------------------------
     @Override

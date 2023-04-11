@@ -19,14 +19,19 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-@AllArgsConstructor @Slf4j @Service public class EmployeeServiceBean implements EmployeeService {
+@AllArgsConstructor
+@Slf4j @Service
+public class EmployeeServiceBean implements EmployeeService {
 
     private final String LOG_START = "EmployeeService --> EmployeeServiceBean --> start of method:  ";
     private final String LOG_END = "EmployeeService --> EmployeeServiceBean --> finish of method:  ";
@@ -36,10 +41,35 @@ import java.util.stream.Stream;
 
 
     //----------------------------------------------------------------------------------------------------
-    @Override @CustomValidationAnnotations({MarkedAsDeleted.class}) public Employee getEmployee(Integer id) {
-        log.debug(LOG_START + "Employee getById(Integer id = {})", id);
+    @Override
+    public Employee addPhoto(Integer id, MultipartFile file) {
+
+        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+        Photo photo = null;
+        try {
+            photo = new Photo();
+            photo.setFileName(fileName);
+            photo.setFileType(file.getContentType());
+            photo.setData(file.getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new NoSuchEmployeeException("There is no employee with ID=" + id + " in database"));
+        employee.getPhotos().add(photo);
+        Employee result = employeeRepository.save(employee);
+
+        return result;
+    }
+
+    //----------------------------------------------------------------------------------------------------
+    @Override
+    @CustomValidationAnnotations({MarkedAsDeleted.class})
+    public Employee getEmployee(Integer id) {
+        log.debug(LOG_START + "Employee getById(Integer id = {})", id);
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(
+                        () -> new NoSuchEmployeeException("There is no employee with ID=" + id + " in database"));
         setIsActiveStatusTrueIfNull(employee); // todo: перенести эту обработку в асспект по валидации полей!
         setIsPrivateStatusTrueIfNull(employee);
         log.debug(LOG_END + "Employee getById(Integer id): result = {}", employee);
@@ -47,7 +77,8 @@ import java.util.stream.Stream;
     }
 
     //----------------------------------------------------------------------------------------------------
-    @Override public Employee createEmployee(Employee employee) {
+    @Override
+    public Employee createEmployee(Employee employee) {
         log.debug(LOG_START + "Employee createEmployee(Employee employee = {})", employee);
         Employee result = employeeRepository.save(employee);
         log.debug(LOG_END + "Employee createEmployee(Employee employee): result = {}", result);
@@ -55,7 +86,8 @@ import java.util.stream.Stream;
     }
 
     //----------------------------------------------------------------------------------------------------
-    @Override @Transactional
+    @Override
+    @Transactional
     @CustomValidationAnnotations({MarkedAsDeleted.class, CountryMatchesAddressesVerification.class})
     public Employee patchEmployee(Integer id, Employee employee) {
         log.debug(LOG_START + "Employee patchEmployee(Integer id = {}, Employee employee = {})", id, employee);
@@ -98,8 +130,9 @@ import java.util.stream.Stream;
     }
 
     //----------------------------------------------------------------------------------------------------
-    @Override @Transactional @CustomValidationAnnotations({MarkedAsDeleted.class}) public Employee updateEmployee(
-            Integer id, Employee employee) {
+    @Override
+    @Transactional @CustomValidationAnnotations({MarkedAsDeleted.class})
+    public Employee updateEmployee(Integer id, Employee employee) {
         log.debug(LOG_START + "Employee updateEmployee(Integer id = {}, Employee employee = {})", id, employee);
         return employeeRepository.findById(id).map(e -> {
             e.setName(employee.getName());
@@ -117,35 +150,33 @@ import java.util.stream.Stream;
     }
 
     //----------------------------------------------------------------------------------------------------
-    @Override public void deleteEmployee(Integer id) {
+    @Override
+    public void deleteEmployee(Integer id) {
         log.debug(LOG_START + "void deleteEmployee(Integer id = {})", id);
         Employee employee = employeeRepository.findById(id)
-                .orElseThrow(() -> new NoSuchEmployeeException("There is no employee with ID=" + id + " in database"));
+                .orElseThrow(
+                        () -> new NoSuchEmployeeException("There is no employee with ID=" + id + " in database"));
         employeeRepository.delete(employee);
         log.debug(LOG_END + "void deleteEmployee(Integer id): employee {} was deleted", employee);
     }
 
     //----------------------------------------------------------------------------------------------------
-    @Override public void markEmployeeAsDeleted(Integer id) {
+    @Override
+    public void markEmployeeAsDeleted(Integer id) {
         log.debug(LOG_START + "void markEmployeeAsDeleted(Integer id = {}): ", id);
         Employee employee = employeeRepository.findById(id)
-                .orElseThrow(() -> new NoSuchEmployeeException("There is no employee with ID=" + id + " in database"));
+                .orElseThrow(
+                        () -> new NoSuchEmployeeException("There is no employee with ID=" + id + " in database"));
         employee.setIsDeleted(Boolean.TRUE);
         employeeRepository.save(employee);
         log.debug(LOG_END + "void markEmployeeAsDeleted(Integer id): employee = {} was marked as delete", employee);
     }
 
     //----------------------------------------------------------------------------------------------------
-    @Override public List<Employee> getAll() {
+    @Override
+    public List<Employee> getAll() {
         log.debug(LOG_START + "List<Employee> getAll().");
-
-        System.err.println(LOG_START + "List<Employee> getAll().");
-
-
         List<Employee> result = employeeRepository.findAll();
-
-        System.err.println(LOG_END + "List<Employee> getAll(): result = " + result);
-
         log.debug(LOG_END + "List<Employee> getAll(): result = {}", result);
         return result;
     }
@@ -176,9 +207,6 @@ import java.util.stream.Stream;
         Page<Employee> result = employeeRepository.findByCountry(country, pageable);
         log.debug(LOG_END + "Page<Employee> getByCountryAndSort(String country, int page, int size, " +
                   "List<String> sortList, String sortOrder):result = {} ", result);
-    List<Employee> rr = result.stream()
-             .map(e->e)
-             .collect(Collectors.toList());
         return result;
     }
 
@@ -186,7 +214,7 @@ import java.util.stream.Stream;
     @Override
     public Set<String> getAllEmployeesCountries() {
         log.debug(LOG_START + "List<String> getAllEmployeesCountries()");
-        Set<Employee> employeeList =  new HashSet<>(employeeRepository.findAll());
+        Set<Employee> employeeList = new HashSet<>(employeeRepository.findAll());
         Set<String> result = employeeList.stream().map(country -> country.getCountry()).collect(Collectors.toSet());
         log.debug(LOG_END + "List<String> getAllEmployeesCountries(): result = {}", result);
         return result;
@@ -200,7 +228,6 @@ import java.util.stream.Stream;
         List<Employee> employeeList = employeeRepository.findAll();
         List<String> result = employeeList.stream().map(Employee::getCountry).sorted(Comparator.naturalOrder())
                 .collect(Collectors.toList());
-
         log.debug(LOG_END + "getAllEmployeesCountriesSorted(): result = {}", result);
         return result;
     }
@@ -211,7 +238,6 @@ import java.util.stream.Stream;
     public Optional<List<String>> getEmails() {
         log.debug(LOG_START + "Optional<List<String>> getEmails()");
         List<Employee> employeeList = employeeRepository.findAll();
-
         List<String> emails = employeeList.stream().map(Employee::getEmail).collect(Collectors.toList());
         Optional<List<String>> result = Optional.ofNullable(emails);
         log.debug(LOG_END + "Optional<String> getEmails(): result = {}", result);
@@ -222,11 +248,13 @@ import java.util.stream.Stream;
     //----------------------------------------------------------------------------------------------------
     @Override
     public List<Employee> getEmployeesByGenderAndCountry(Gender gender, String country) {
-        log.debug(LOG_START + "List<Employee> getEmployeesByGenderAndCountry(Gender gender = {}, String country = {})",
+        log.debug(
+                LOG_START + "List<Employee> getEmployeesByGenderAndCountry(Gender gender = {}, String country = {})",
                 gender, country);
         List<Employee> result = employeeRepository.findByGenderAndCountry(gender.toString(), country);
         log.debug(LOG_END +
-                  "List<Employee> getEmployeesByGenderAndCountry(Gender gender, String country): result = {}", result);
+                  "List<Employee> getEmployeesByGenderAndCountry(Gender gender, String country): result = {}",
+                result);
         return result;
     }
 
@@ -236,7 +264,6 @@ import java.util.stream.Stream;
     public Page<Employee> getEmployeesWithActiveAddressesInCountry(String country, Pageable pageable) {
         log.debug(LOG_START + "Page<Employee> getEmployeesWithActiveAddressesInCountry(String country  = {}, " +
                   "Pageable pageable  = {})", country, pageable);
-
         Page<Employee> result = employeeRepository.findAllWhoHasActiveAddressesInCountry(country, pageable);
         log.debug(LOG_END + "Page<Employee> getEmployeesWithActiveAddressesInCountry(String country, " +
                   "Pageable pageable): result = {}", result);
@@ -249,7 +276,6 @@ import java.util.stream.Stream;
     public List<Employee> handleEmployeesWithIsDeletedFieldIsNull() {
         log.debug(LOG_START + "List<Employee> handleEmployeesWithIsDeletedFieldIsNull()");
         List<Employee> employees = employeeRepository.queryEmployeeByIsDeletedIsNull();
-        //        for (Employee employee : employees) employee.setIsDeleted(Boolean.FALSE);
         employees.forEach(employee -> employee.setIsDeleted(Boolean.FALSE));
         employeeRepository.saveAll(employees);
         List<Employee> result = employeeRepository.queryEmployeeByIsDeletedIsNull();
@@ -263,7 +289,6 @@ import java.util.stream.Stream;
         log.debug(LOG_START + "List<Employee> handleEmployeesWithIsPrivateFieldIsNull()");
         List<Employee> employees = employeeRepository.queryEmployeeByIsPrivateIsNull();
         employees.forEach(employee -> employee.setIsPrivate(Boolean.FALSE));
-        /*List<Employee> result = */
         employeeRepository.saveAll(employees);
         List<Employee> result = employeeRepository.queryEmployeeByIsPrivateIsNull();
         log.debug(LOG_END + "List<Employee> handleEmployeesWithIsPrivateFieldIsNull(): result = {}", result);
@@ -278,11 +303,7 @@ import java.util.stream.Stream;
         employees.stream()
                 .filter(e -> e.getIsConfirmed() == null)
                 .forEach(e -> e.setIsConfirmed(Boolean.FALSE));
-                        //                .map(e -> e)
-
-                        //        forEach(employee -> employee.setIsPrivate((employee.getIsConfirmed() != null) ? Boolean.FALSE));
-                        /*List<Employee> result = */
-                        employeeRepository.saveAll(employees);
+        employeeRepository.saveAll(employees);
         List<Employee> result = employeeRepository.queryEmployeeByIsPrivateIsNull();
         log.debug(LOG_END + "List<Employee> handleEmployeesWithIsPrivateFieldIsNull(): result = {}", result);
         return result;
@@ -306,7 +327,6 @@ import java.util.stream.Stream;
         return result;
     }
 
-
     //---------------------------------------------------------------------------------------
     @Override
     public void sendMailConfirm(Integer id) {
@@ -318,7 +338,8 @@ import java.util.stream.Stream;
                 "<a href=\"http://localhost:8087/api/users/" + employee.getId() + "/confirmed>" +
                 "Подтвердить регистрацию</a>\n" +
                 "Если вы не регистрировались на нашем сайте, проигнорируйте это сообщение.\n");
-        log.debug(LOG_END + "void sendMailConfirm(Integer id): email confirmation was sent to employee {}", employee);
+        log.debug(LOG_END + "void sendMailConfirm(Integer id): email confirmation was sent to employee {}",
+                employee);
     }
 
     //---------------------------------------------------------------------------------------
@@ -396,7 +417,6 @@ import java.util.stream.Stream;
         return result;
     }
 
-
     //----------------------------------------------------------------------------------------------------
     // private methods
     // todo: хорошо бы, наверное, подобные методы в к какую-то спец.утилиту вынести...
@@ -438,8 +458,8 @@ import java.util.stream.Stream;
                   + "result = {}", sorts);
         return sorts;
     }
-    //----------------------------------------------------------------------------------------------------
 
+    //----------------------------------------------------------------------------------------------------
 }
 
 

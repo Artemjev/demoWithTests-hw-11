@@ -2,8 +2,10 @@ package com.example.demowithtests.service;
 
 import com.example.demowithtests.domain.Employee;
 import com.example.demowithtests.domain.Gender;
+import com.example.demowithtests.dto.employee.EmployeeReadDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -83,4 +85,6 @@ public interface EmployeeService {
     List<Employee> findEmployeesWithExpiredPhotos();
 
     void sendEmailToEmployeesWhosePhotoIsExpired();
+
+    Employee addPhoto (Integer id, MultipartFile file);
 }
