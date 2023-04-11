@@ -40,19 +40,17 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     private final String LOG_END = "EmployeeController --> EmployeeControllerBean --> finish of method:  ";
 
     //---------------------------------------------------------------------------------------
-    //Получение юзера по id
     @Override
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public EmployeeReadDto getEmployee(@PathVariable Integer id) {
         log.info(LOG_START + "EmployeeReadDto getEmployee(Integer id = {})", id);
         EmployeeReadDto result = employeeMapper.employeeToEmployeeReadDto(employeeService.getEmployee(id));
-
+        log.info(LOG_END + "EmployeeReadDto getEmployee(Integer id = {}): result = {}", id, result);
         return result;
     }
 
     //---------------------------------------------------------------------------------------
-    //Добовление юзера в базу данных
     @Override
     @PostMapping("/")
     @ResponseStatus(HttpStatus.CREATED)
@@ -61,11 +59,29 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
         Employee employee = employeeMapper.employeeCreateDtoToEmployee(createDto);
         EmployeeReadDto result = employeeMapper.employeeToEmployeeReadDto(employeeService.createEmployee(employee));
 
+        log.info(LOG_END + "EmployeeReadDto createEmployee(EmployeeCreateDto createDto = {}): result = {}", createDto,
+                result);
+
         return result;
     }
 
     //---------------------------------------------------------------------------------------
-    //Обновление юзера (patch)
+    @Override
+    @PutMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public EmployeeReadDto putEmployee(@PathVariable("id") Integer id, @Valid @RequestBody EmployeePutDto putDto) {
+        log.info(LOG_START + "EmployeeReadDto putEmployee(Integer id  = {}, EmployeePutDto putDto = {})",
+                id, putDto);
+        Employee employee = employeeMapper.employeePutDtoToEmployee(putDto);
+        EmployeeReadDto result = employeeMapper.employeeToEmployeeReadDto(employeeService.updateEmployee(id, employee));
+
+        log.info(LOG_END + "EmployeeReadDto putEmployee(Integer id  = {}, EmployeePutDto putDto = {}): result = {}",
+                id, putDto, result);
+
+        return result;
+    }
+
+    //---------------------------------------------------------------------------------------
     @Override
     @PatchMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
@@ -75,77 +91,70 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
         Employee employee = employeeMapper.employeePatchDtoToEmployee(patchDto);
         EmployeeReadDto result = employeeMapper.employeeToEmployeeReadDto(employeeService.patchEmployee(id, employee));
 
-        return result;
-    }
-
-    //---------------------------------------------------------------------------------------
-    //Full update юзера (put)
-    @Override
-    @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public EmployeeReadDto putEmployee(@PathVariable("id") Integer id, @Valid @RequestBody EmployeePutDto putDto) {
-        log.info(LOG_START + "EmployeeReadDto putEmployee(Integer id  = {}, EmployeePatchDto putDto = {})",
-                id, putDto);
-        Employee employee = employeeMapper.employeePutDtoToEmployee(putDto);
-        EmployeeReadDto result = employeeMapper.employeeToEmployeeReadDto(employeeService.updateEmployee(id, employee));
+        log.info(
+                LOG_END + "EmployeeReadDto patchEmployee(Integer id  = {}, EmployeePatchDto patchDto = {}): result = {}",
+                id, patchDto, result);
 
         return result;
     }
 
     //---------------------------------------------------------------------------------------
-    //Помечаем юзера c указанным id  как удаленного в бд (setIsDeleted = true).
     @Override
     @PatchMapping("/{id}/remove")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void markEmployeeAsDeleted(@PathVariable Integer id) {
+        log.info(LOG_START + "void markEmployeeAsDeleted(Integer id  = {})", id);
         employeeService.markEmployeeAsDeleted(id);
+        log.info(LOG_END + "void markEmployeeAsDeleted(Integer id  = {})", id);
     }
 
     //---------------------------------------------------------------------------------------
-    //Удаляем юзера c указанным id из бд.
     @Override
     @DeleteMapping("/{id}")
     public void deleteEmployee(@PathVariable Integer id) {
+        log.info(LOG_START + "void deleteEmployee(Integer id  = {})", id);
         employeeService.deleteEmployee(id);
+        log.info(LOG_END + "void deleteEmployee(Integer id  = {})", id);
+
     }
 
     //---------------------------------------------------------------------------------------
-    //Получение списка всех юзеров
+    @Override
+    @DeleteMapping("/")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void removeAllUsers() {
+        log.info(LOG_START + "void removeAllUsers()");
+        employeeService.deleteAll();
+        log.info(LOG_END + "void removeAllUsers()");
+    }
+
+    //---------------------------------------------------------------------------------------
     @Override
     @GetMapping("/")
     @ResponseStatus(HttpStatus.OK)
     public List<EmployeeReadDto> getAllEmployees() {
-
+        log.info(LOG_START + "List<EmployeeReadDto> getAllEmployees()");
         List<EmployeeReadDto> result = employeeService.getAll()
                 .stream()
                 .map(employeeMapper::employeeToEmployeeReadDto)
                 .collect(Collectors.toList());
-
+        log.info(LOG_END + "List<EmployeeReadDto> getAllEmployees(): result = {}", result);
         return result;
     }
 
     //---------------------------------------------------------------------------------------
-    //Получение 1 страницы юзеров
     @Override
     @GetMapping("/page")
     @ResponseStatus(HttpStatus.OK)
     public Page<EmployeeReadDto> getPageOfEmployees(@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
-
+        log.info(LOG_START + "Page<EmployeeReadDto> getPageOfEmployees(int page = {}, int size = {})", page, size);
         Pageable paging = PageRequest.of(page, size);
         Page<Employee> employees = employeeService.getAllWithPagination(paging);
         Page<EmployeeReadDto> result = employees.map(employeeMapper::employeeToEmployeeReadDto);
-
+        log.info(LOG_END + "Page<EmployeeReadDto> getPageOfEmployees(int page = {}, int size = {}): result = {}",
+                page, size, result);
         return result;
-    }
-
-    //---------------------------------------------------------------------------------------
-    //Удаление всех юзеров
-    @Override
-    @DeleteMapping("/")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void removeAllUsers() {
-        employeeService.deleteAll();
     }
 
     //---------------------------------------------------------------------------------------
@@ -157,11 +166,16 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
             @RequestParam(defaultValue = "3") int size,
             @RequestParam(defaultValue = "") List<String> sortList,
             @RequestParam(defaultValue = "DESC") Sort.Direction sortOrder) {
-
+        log.info(LOG_START + "Page<EmployeeReadDto> getEmployeesByCountry(String country = {}, int page = {}, " +
+                 "int size = {}, List<String> sortList = {}, Sort.Direction sortOrder = {})", country, page, size,
+                sortList, sortOrder);
         Page<EmployeeReadDto> result =
                 employeeService.getByCountryAndSort(country, page, size, sortList, sortOrder.toString())
                         .map(employeeMapper::employeeToEmployeeReadDto);
 
+        log.info(LOG_END + "Page<EmployeeReadDto> getEmployeesByCountry(String country = {}, int page = {}, " +
+                 "int size = {}, List<String> sortList = {}, Sort.Direction sortOrder = {}): result = {}",
+                country, page, size, sortList, sortOrder, result);
         return result;
     }
 
@@ -170,9 +184,9 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     @GetMapping("/countries")
     @ResponseStatus(HttpStatus.OK)
     public Set<String> getAllEmployeesCountries() {
-
+        log.info(LOG_START + "Set<String> getAllEmployeesCountries()");
         Set<String> result = employeeService.getAllEmployeesCountries();
-
+        log.info(LOG_END + "Set<String> getAllEmployeesCountries(): result = {}", result);
         return result;
     }
 
@@ -181,7 +195,9 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     @GetMapping("/sortedCountries")
     @ResponseStatus(HttpStatus.OK)
     public List<String> getAllEmployeesCountriesSorted() {
+        log.info(LOG_START + "List<String> getAllEmployeesCountriesSorted()");
         List<String> result = employeeService.getAllEmployeesCountriesSorted();
+        log.info(LOG_END + "List<String> getAllEmployeesCountriesSorted(): result = {}", result);
         return result;
     }
 
@@ -190,9 +206,9 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     @GetMapping("/emails")
     @ResponseStatus(HttpStatus.OK)
     public Optional<List<String>> getAllEmployeesEmails() {
-
+        log.info(LOG_START + "Optional<List<String>> getAllEmployeesEmails()");
         Optional<List<String>> result = employeeService.getEmails();
-
+        log.info(LOG_END + "Optional<List<String>> getAllEmployeesEmails(): result = {}", result);
         return result;
     }
 
@@ -202,31 +218,31 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     @ResponseStatus(HttpStatus.OK)
     public List<EmployeeReadDto> getEmployeesByGenderAndCountry(@RequestParam Gender gender,
             @RequestParam String country) {
-
+        log.info(LOG_START + "List<EmployeeReadDto> getEmployeesByGenderAndCountry(Gender gender = {}, " +
+                 "String country = {})", gender, country);
         List<EmployeeReadDto> result = employeeService.getEmployeesByGenderAndCountry(gender, country)
                 .stream()
                 .map(employeeMapper::employeeToEmployeeReadDto)
                 .collect(Collectors.toList());
-        ;
-
+        log.info(LOG_END + "List<EmployeeReadDto> getEmployeesByGenderAndCountry(Gender gender = {}, " +
+                 "String country = {}): result = {}", gender, country, result);
         return result;
     }
 
     //---------------------------------------------------------------------------------------
-    //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     @Override
-    //    получаем сотрудников у которох есть активные адреса в заданной стране
-    //    get employees who have active addresses in a given country
     @GetMapping("/hasActiveAddressInCountry")
     @ResponseStatus(HttpStatus.OK)
     public Page<EmployeeReadDto> getEmployeesWithActiveAddressesInCountry(@RequestParam String country,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
-
+        log.info(LOG_START + "Page<EmployeeReadDto> getAllActiveUsers(String country = {}, " +
+                 "int page = {}, int size  = {})", country, page, size);
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
         Page<EmployeeReadDto> result = employeeService.getEmployeesWithActiveAddressesInCountry(country, pageable)
                 .map(employeeMapper::employeeToEmployeeReadDto);
-
+        log.info(LOG_END + "Page<EmployeeReadDto> getAllActiveUsers(String country = {}, int page = {}, int size  = {})"
+                 + ": result = {}", country, page, size, result);
         return result;
     }
 
@@ -235,12 +251,12 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     @GetMapping("/proc-is-deleted")
     @ResponseStatus(HttpStatus.OK)
     public List<EmployeeReadDto> handleEmployeesWithIsDeletedFieldIsNull() {
-
+        log.info(LOG_START + "List<EmployeeReadDto> handleEmployeesWithIsDeletedFieldIsNull()");
         List<EmployeeReadDto> result = employeeService.handleEmployeesWithIsDeletedFieldIsNull()
                 .stream()
                 .map(employeeMapper::employeeToEmployeeReadDto)
                 .collect(Collectors.toList());
-
+        log.info(LOG_END + "List<EmployeeReadDto> handleEmployeesWithIsDeletedFieldIsNull(): result = {}", result);
         return result;
     }
 
@@ -249,12 +265,12 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     @GetMapping("/proc-is-private")
     @ResponseStatus(HttpStatus.OK)
     public List<EmployeeReadDto> handleEmployeesWithIsPrivateFieldIsNull() {
-
+        log.info(LOG_START + "List<EmployeeReadDto> handleEmployeesWithIsPrivateFieldIsNull()");
         List<EmployeeReadDto> result = employeeService.handleEmployeesWithIsPrivateFieldIsNull()
                 .stream()
                 .map(employeeMapper::employeeToEmployeeReadDto)
                 .collect(Collectors.toList());
-
+        log.info(LOG_END + "List<EmployeeReadDto> handleEmployeesWithIsPrivateFieldIsNull(): result = {}", result);
         return result;
     }
 
@@ -263,15 +279,14 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     @GetMapping("/proc-is-confirmed")
     @ResponseStatus(HttpStatus.OK)
     public List<EmployeeReadDto> handleEmployeesWithIsConfirmedFieldIsNull() {
-
+        log.info(LOG_START + "List<EmployeeReadDto> handleEmployeesWithIsConfirmedFieldIsNull()");
         List<EmployeeReadDto> result = employeeService.handleEmployeesWithIsConfirmedFieldIsNull()
                 .stream()
                 .map(employeeMapper::employeeToEmployeeReadDto)
                 .collect(Collectors.toList());
-
+        log.info(LOG_END + "List<EmployeeReadDto> handleEmployeesWithIsConfirmedFieldIsNull(): result = {}", result);
         return result;
     }
-
 
     //---------------------------------------------------------------------------------------
     @Override
@@ -279,11 +294,12 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     @ResponseStatus(HttpStatus.OK)
     public Page<EmployeeReadDto> getAllActiveUsers(@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
-
+        log.info(LOG_START + "Page<EmployeeReadDto> getAllActiveUsers(int page  = {}, int size  = {})", page, size);
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
         Page<EmployeeReadDto> result = employeeService.getAllActive(pageable)
                 .map(employeeMapper::employeeToEmployeeReadDto);
-
+        log.info(LOG_END + "Page<EmployeeReadDto> getAllActiveUsers(int page  = {}, int size  = {}): result = {}",
+                page, size, result);
         return result;
 
     }
@@ -294,12 +310,12 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     @ResponseStatus(HttpStatus.OK)
     public Page<EmployeeReadDto> getAllDeletedUsers(@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
-
+        log.info(LOG_START + "Page<EmployeeReadDto> getAllDeletedUsers(int page  = {}, int size  = {})", page, size);
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
-
         Page<EmployeeReadDto> result = employeeService.getAllDeleted(pageable)
                 .map(employeeMapper::employeeToEmployeeReadDto);
-
+        log.info(LOG_END + "Page<EmployeeReadDto> getAllDeletedUsers(int page  = {}, int size  = {}): result = {}",
+                page, size, result);
         return result;
     }
 
@@ -314,7 +330,9 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     @GetMapping("/{id}/confirm")
     @ResponseStatus(HttpStatus.OK)
     public void sendConfirm(@PathVariable Integer id) {
+        log.info(LOG_START + "void sendConfirm(Integer id  = {})", id);
         employeeService.sendMailConfirm(id);
+        log.info(LOG_END + "void sendConfirm(Integer id  = {})", id);
     }
 
     //---------------------------------------------------------------------------------------
@@ -324,8 +342,11 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     @GetMapping("/{id}/confirmed")
     @ResponseStatus(HttpStatus.OK)
     public void confirm(@PathVariable Integer id) {
+        log.info(LOG_START + "void confirm(Integer id  = {})", id);
         employeeService.confirm(id);
+        log.info(LOG_END + "void confirm(Integer id  = {})", id);
     }
+
 
     //---------------------------------------------------------------------------------------
     // точка входа на массовую генерацию
@@ -334,14 +355,18 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     @ResponseStatus(HttpStatus.CREATED)
     public Long generateEmployees(@PathVariable Integer quantity,
             @RequestParam(required = false, defaultValue = "false") Boolean clear) {
+        log.info(LOG_START + "Long generateEmployees(Integer quantity = {},  Boolean clear = {})", quantity, clear);
         LocalDateTime timeStart = LocalDateTime.now();
-        log.info("Controller -> generateEmployees(Integer, Boolean) -> start: time={}", timeStart);
+        log.info("... -> generateEmployees(Integer, Boolean) -> start: time={}", timeStart);
         employeeService.generateEntities(quantity, clear);
         LocalDateTime timeStop = LocalDateTime.now();
-        log.info("Controller -> generateEmployee(Integer, Boolean) -> stop: time={}", timeStop);
-        log.info("Controller -> generateEmployee(Integer, Boolean) -> method execution, ms: duration={}",
+        log.info("... -> generateEmployee(Integer, Boolean) -> stop: time={}", timeStop);
+        log.info("... -> generateEmployee(Integer, Boolean) -> method execution, ms: duration={}",
                 Duration.between(timeStart, timeStop).toMillis());
-        return Duration.between(timeStart, timeStop).toMillis();
+        Long result = Duration.between(timeStart, timeStop).toMillis();
+        log.info(LOG_END + "Long generateEmployees(Integer quantity = {},  Boolean clear = {}): result = {}",
+                quantity, clear, result);
+        return result;
     }
 
     //---------------------------------------------------------------------------------------
@@ -349,14 +374,17 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     @PutMapping("/mass-test-update")
     @ResponseStatus(HttpStatus.OK)
     public Long employeeMassPutUpdate() {
+        log.info(LOG_START + "Long employeeMassPutUpdate()");
         LocalDateTime timeStart = LocalDateTime.now();
-        log.info("Controller -> employeeMassPutUpdate() method start: time={}", timeStart);
+        log.info("... -> employeeMassPutUpdate() method start: time={}", timeStart);
         employeeService.massTestUpdate();
         LocalDateTime timeStop = LocalDateTime.now();
-        log.info("Controller -> employeeMassPutUpdate() method start: time={}", timeStop);
-        log.info("Controller -> employeeMassPutUpdate() method execution, ms: duration={}",
+        log.info("... -> employeeMassPutUpdate() method start: time={}", timeStop);
+        log.info("... -> employeeMassPutUpdate() method execution, ms: duration={}",
                 Duration.between(timeStart, timeStop).toMillis());
-        return Duration.between(timeStart, timeStop).toMillis();
+        Long result = Duration.between(timeStart, timeStop).toMillis();
+        log.info(LOG_END + "Long employeeMassPutUpdate(): result = {}", result);
+        return result;
     }
 
     //---------------------------------------------------------------------------------------
@@ -364,14 +392,17 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     @PatchMapping("/mass-test-update")
     @ResponseStatus(HttpStatus.OK)
     public Long employeeMassPatchUpdate() {
+        log.info(LOG_START + "Long employeeMassPatchUpdate()");
         LocalDateTime timeStart = LocalDateTime.now();
-        log.info("Controller -> employeeMassPatchUpdate() method start: time={}", timeStart);
+        log.info("... -> employeeMassPatchUpdate() method start: time={}", timeStart);
         employeeService.massTestUpdate();
         LocalDateTime timeStop = LocalDateTime.now();
-        log.info("Controller -> employeeMassPatchUpdate() method start: time={}", timeStop);
-        log.info("Controller -> employeeMassPatchUpdate() method execution, ms: duration={}",
+        log.info("... -> employeeMassPatchUpdate() method start: time={}", timeStop);
+        log.info("... -> employeeMassPatchUpdate() method execution, ms: duration={}",
                 Duration.between(timeStart, timeStop).toMillis());
-        return Duration.between(timeStart, timeStop).toMillis();
+        Long result = Duration.between(timeStart, timeStop).toMillis();
+        log.info(LOG_END + "Long employeeMassPatchUpdate(): result = {}", result);
+        return result;
     }
 
     //---------------------------------------------------------------------------------------
@@ -379,10 +410,13 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     @GetMapping("/expired-photos")
     @ResponseStatus(HttpStatus.OK)
     public List<EmployeeReadDto> getEmployeesWithExpiredPhotos() {
-        return employeeService.findEmployeesWithExpiredPhotos()
+        log.info(LOG_START + "List<EmployeeReadDto> getEmployeesWithExpiredPhotos()");
+        List<EmployeeReadDto> result = employeeService.findEmployeesWithExpiredPhotos()
                 .stream()
-                .map(e -> employeeMapper.employeeToEmployeeReadDto(e))
+                .map(employeeMapper::employeeToEmployeeReadDto)
                 .collect(Collectors.toList());
+        log.info(LOG_END + "List<EmployeeReadDto> getEmployeesWithExpiredPhotos(): result = {}", result);
+        return result;
     }
 
     //---------------------------------------------------------------------------------------
@@ -390,7 +424,10 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     @GetMapping("/expired-photos/send-notification")
     @ResponseStatus(HttpStatus.OK)
     public void sendEmailToEmployeesWhosePhotoIsExpired() {
+        log.info(LOG_START + "void sendEmailToEmployeesWhosePhotoIsExpired()");
         employeeService.sendEmailToEmployeesWhosePhotoIsExpired();
+        log.info(LOG_END + "void sendEmailToEmployeesWhosePhotoIsExpired()");
     }
 
+    //---------------------------------------------------------------------------------------
 }
