@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 
 public interface EmployeeController {
@@ -22,10 +23,10 @@ public interface EmployeeController {
     EmployeeReadDto createEmployee(EmployeeCreateDto createDto);
 
     //Обновление юзера (patch)
-    Employee patchEmployee(Integer id, EmployeePatchDto patchDto);
+    EmployeeReadDto patchEmployee(Integer id, EmployeePatchDto patchDto);
 
     //Full update юзера (put)
-    Employee putEmployee(Integer id, EmployeePutDto putDto);
+    EmployeeReadDto putEmployee(Integer id, EmployeePutDto putDto);
 
     //Помечаем юзера c указанным id  как удаленного в бд (setIsDeleted = true).
     void markEmployeeAsDeleted(Integer id);
@@ -42,25 +43,27 @@ public interface EmployeeController {
     //Удаление всех юзеров
     void removeAllUsers();
 
-    Page<Employee> getEmployeesByCountry(String country, int page, int size, List<String> sortList, Sort.Direction sortOrder);
+    Page<EmployeeReadDto> getEmployeesByCountry(String country, int page, int size, List<String> sortList, Sort.Direction sortOrder);
 
-    List<String> getAllEmployeesCountries();
+    Set<String> getAllEmployeesCountries();
 
     List<String> getAllEmployeesCountriesSorted();
 
-    Optional<String> getAllEmployeesEmails();
+    Optional<List<String>> getAllEmployeesEmails();
 
-    List<Employee> getEmployeesByGenderAndCountry(Gender gender, String country);
+    List<EmployeeReadDto> getEmployeesByGenderAndCountry(Gender gender, String country);
 
-    Page<Employee> getEmployeesWithActiveAddressesInCountry(String country, int page, int size);
+    Page<EmployeeReadDto> getEmployeesWithActiveAddressesInCountry(String country, int page, int size);
 
-    List<Employee> handleEmployeesWithIsDeletedFieldIsNull();
+    List<EmployeeReadDto> handleEmployeesWithIsDeletedFieldIsNull();
 
-    List<Employee> handleEmployeesWithIsPrivateFieldIsNull();
+    List<EmployeeReadDto> handleEmployeesWithIsPrivateFieldIsNull();
 
-    Page<Employee> getAllActiveUsers(int page, int size);
+    List<EmployeeReadDto> handleEmployeesWithIsConfirmedFieldIsNull();
 
-    Page<Employee> getAllDeletedUsers(int page, int size);
+    Page<EmployeeReadDto> getAllActiveUsers(int page, int size);
+
+    Page<EmployeeReadDto> getAllDeletedUsers(int page, int size);
 
     /**
      * Метод отправляет на почту юзера письмо с запросом на подтверждение.
@@ -78,7 +81,7 @@ public interface EmployeeController {
 
     Long employeeMassPatchUpdate();
 
-    List<Employee> getEmployeesWithExpiredPhotos();
+    List<EmployeeReadDto> getEmployeesWithExpiredPhotos();
 
     void sendEmailToEmployeesWhosePhotoIsExpired();
 }

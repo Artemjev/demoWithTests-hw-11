@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 
 @Tag(name = "Employee", description = "Employee API") public interface EmployeeControllerApiDoc
@@ -52,7 +53,7 @@ import java.util.Optional;
                      @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
                      @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
                      @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
-    Employee patchEmployee(Integer id, EmployeePatchDto patchDto);
+    EmployeeReadDto patchEmployee(Integer id, EmployeePatchDto patchDto);
 
     @Override
     @Operation(summary = "This is endpoint to partially update employee.",
@@ -63,7 +64,7 @@ import java.util.Optional;
                            @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
                            @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
                            @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
-    Employee putEmployee(Integer id, EmployeePutDto putDto);
+    EmployeeReadDto putEmployee(Integer id, EmployeePutDto putDto);
 
     @Override
     @Operation(summary = "This is endpoint to mark employee as deleted.",
@@ -132,7 +133,7 @@ import java.util.Optional;
                            @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
                            @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
                            @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
-    Page<Employee> getEmployeesByCountry(String country, int page, int size, List<String> sortList,
+    Page<EmployeeReadDto> getEmployeesByCountry(String country, int page, int size, List<String> sortList,
             Sort.Direction sortOrder);
 
 
@@ -145,7 +146,7 @@ import java.util.Optional;
                            @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
                            @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
                            @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
-    List<String> getAllEmployeesCountries();
+    Set<String> getAllEmployeesCountries();
 
     @Override
     @Operation(summary = "This is an endpoint to return a  sorted list of all employees' countries.",
@@ -167,7 +168,7 @@ import java.util.Optional;
                            @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
                            @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
                            @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
-    Optional<String> getAllEmployeesEmails();
+    Optional<List<String>> getAllEmployeesEmails();
 
 
     @Override
@@ -179,7 +180,7 @@ import java.util.Optional;
                            @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
                            @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
                            @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
-    List<Employee> getEmployeesByGenderAndCountry(Gender gender, String country);
+    List<EmployeeReadDto> getEmployeesByGenderAndCountry(Gender gender, String country);
 
 
     @Override
@@ -192,7 +193,7 @@ import java.util.Optional;
                            @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
                            @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
                            @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
-    Page<Employee> getEmployeesWithActiveAddressesInCountry(String country, int page, int size);
+    Page<EmployeeReadDto> getEmployeesWithActiveAddressesInCountry(String country, int page, int size);
 
 
     @Override
@@ -206,7 +207,7 @@ import java.util.Optional;
                            @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
                            @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
                            @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
-    List<Employee> handleEmployeesWithIsDeletedFieldIsNull();
+    List<EmployeeReadDto> handleEmployeesWithIsDeletedFieldIsNull();
 
     @Override
     @Operation(summary = "Endpoint is used to set value of field IsPrivate=FALSE for all employees whose field " +
@@ -219,7 +220,21 @@ import java.util.Optional;
                            @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
                            @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
                            @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
-    List<Employee> handleEmployeesWithIsPrivateFieldIsNull();
+    List<EmployeeReadDto> handleEmployeesWithIsPrivateFieldIsNull();
+
+
+    @Override
+    @Operation(summary = "Endpoint is used to set value of field IsConfirmed=FALSE for all employees whose field " +
+                         "IsConfirmed=NULL.",
+               description = "Create request to setup IsPrivate=FALSE for all employees whose field IsPrivate=NULL.",
+               tags = {"Employee"})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK. Request was handled successfully"),
+                           @ApiResponse(responseCode = "204", description = "NO CONTENT. No users to process"),
+                           @ApiResponse(responseCode = "400", description = "BAD REQUEST. Invalid input"),
+                           @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
+                           @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
+                           @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
+    List<EmployeeReadDto> handleEmployeesWithIsConfirmedFieldIsNull();
 
     @Override
     @Operation(summary = "This is endpoint to return page of deleted employees.",
@@ -231,7 +246,7 @@ import java.util.Optional;
                            @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
                            @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
                            @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
-    Page<Employee> getAllActiveUsers(int page, int size);
+    Page<EmployeeReadDto> getAllActiveUsers(int page, int size);
 
     @Override
     @Operation(summary = "This is endpoint to return page of active employees.",
@@ -242,7 +257,7 @@ import java.util.Optional;
                            @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
                            @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
                            @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
-    Page<Employee> getAllDeletedUsers(int page, int size);
+    Page<EmployeeReadDto> getAllDeletedUsers(int page, int size);
 
     @Override
     @Operation(summary = "Endpoint is used to send email to employee with a request to confirm their data.",
@@ -311,7 +326,7 @@ import java.util.Optional;
                            @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
                            @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
                            @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
-    List<Employee> getEmployeesWithExpiredPhotos();
+    List<EmployeeReadDto> getEmployeesWithExpiredPhotos();
 
     @Override
     @Operation(summary = "Endpoint is used to send a notification email to employees whose photos are expired.",

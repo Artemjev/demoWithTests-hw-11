@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 
 public interface EmployeeService {
@@ -52,7 +53,7 @@ public interface EmployeeService {
      *
      * @return A list of all the countries that employees are from.
      */
-    List<String> getAllEmployeesCountries();
+    Set<String> getAllEmployeesCountries();
 
 
     /**
@@ -63,11 +64,13 @@ public interface EmployeeService {
     List<String> getAllEmployeesCountriesSorted();
 
 
-    Optional<String> getEmails();
+    Optional<List<String>> getEmails();
 
     List<Employee> handleEmployeesWithIsDeletedFieldIsNull();
 
     List<Employee> handleEmployeesWithIsPrivateFieldIsNull();
+
+    List<Employee> handleEmployeesWithIsConfirmedFieldIsNull();
 
     void sendMailConfirm(Integer id);
 
