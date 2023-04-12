@@ -48,62 +48,53 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     private final String LOG_END = "EmployeeController --> EmployeeControllerBean --> finish of method:  ";
 
 
-//    //---------------------------------------------------------------------------------------
-//    @Override
-//    @GetMapping("/{employeeId}/getPhotoDetails")
-//    public Photo getPhotoDetails(@PathVariable Integer employeeId) {
-//
-//        Photo result = employeeService.getPhoto(employeeId)
-//                .orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
-//
-//        return result;
-//
-//    }
-
-
     //---------------------------------------------------------------------------------------
     @Override
     @GetMapping("/{employeeId}/getPhotoDetails")
     public PhotoDto getPhotoDetails(@PathVariable Integer employeeId) {
+        log.info(LOG_START + "PhotoDto getPhotoDetails(Integer employeeId = {})", employeeId);
 
         Photo photo = employeeService.getPhoto(employeeId)
                 .orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
 
         PhotoDto result = photoMapper.photoToPhotoDto(photo);
 
+        log.info(LOG_START + "PhotoDto getPhotoDetails(Integer employeeId = {}): result = {}", employeeId, result);
         return result;
-
     }
-
 
     //---------------------------------------------------------------------------------------
     @Override
     @GetMapping("/{employeeId}/getPhoto")
     public ResponseEntity<byte[]> getPhoto(@PathVariable Integer employeeId) {
+        log.info(LOG_START + "ResponseEntity<byte[]> getPhoto(Integer employeeId = {})", employeeId);
 
-        //        Optional<Photo> photoOpt = employeeService.getPhoto(id);
         Photo photo = employeeService.getPhoto(employeeId)
                 .orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
+
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_JPEG);
 
         ResponseEntity<byte[]> result = new ResponseEntity<>(photo.getData(), headers, HttpStatus.OK);
 
+        log.info(LOG_END + "ResponseEntity<byte[]> getPhoto(Integer employeeId = {}): result = {}", employeeId, result);
         return result;
-
     }
 
     //---------------------------------------------------------------------------------------
     @Override
     @PatchMapping("/{employeeId}/uploadPhoto")
-    public ResponseEntity<String> uploadPhoto(@PathVariable Integer employeeId, @RequestParam("file") MultipartFile file) {
-        try {
-            employeeService.addPhoto(employeeId, file);
-            return ResponseEntity.ok().body("Photo has been uploaded successfully.");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Failed to upload photo: " + e.getMessage());
-        }
+    public EmployeeReadDto uploadPhoto(@PathVariable Integer employeeId, @RequestParam("file") MultipartFile file) {
+        log.info(LOG_START + "ResponseEntity<String> uploadPhoto(Integer employeeId = {}, MultipartFile file = {})",
+                employeeId, file);
+
+        Employee updatedEmployee = employeeService.addPhoto(employeeId, file);
+
+        EmployeeReadDto result = employeeMapper.employeeToEmployeeReadDto(updatedEmployee);
+
+        log.info(LOG_END + "ResponseEntity<String> uploadPhoto(Integer employeeId = {}, MultipartFile file = {}):" +
+                 " result = {}", employeeId, file, result);
+        return result;
     }
 
     //---------------------------------------------------------------------------------------
@@ -125,11 +116,8 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
         log.info(LOG_START + "EmployeeReadDto createEmployee(EmployeeCreateDto createDto = {})", createDto);
         Employee employee = employeeMapper.employeeCreateDtoToEmployee(createDto);
         EmployeeReadDto result = employeeMapper.employeeToEmployeeReadDto(employeeService.createEmployee(employee));
-
         log.info(LOG_END + "EmployeeReadDto createEmployee(EmployeeCreateDto createDto = {}): result = {}",
-                createDto,
-                result);
-
+                createDto, result);
         return result;
     }
 

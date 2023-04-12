@@ -6,13 +6,16 @@ import com.example.demowithtests.dto.employee.EmployeeCreateDto;
 import com.example.demowithtests.dto.employee.EmployeePatchDto;
 import com.example.demowithtests.dto.employee.EmployeePutDto;
 import com.example.demowithtests.dto.employee.EmployeeReadDto;
+import com.example.demowithtests.dto.photo.PhotoDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -339,4 +342,11 @@ import java.util.Set;
                            @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
                            @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
     void sendEmailToEmployeesWhosePhotoIsExpired();
+
+    @Override
+    PhotoDto getPhotoDetails(Integer employeeId);
+    @Override
+    ResponseEntity<byte[]> getPhoto(Integer employeeId);
+//    @Override
+//    ResponseEntity<String> uploadPhoto(Integer employeeId, MultipartFile file);
 }

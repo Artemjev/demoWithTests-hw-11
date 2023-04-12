@@ -85,5 +85,7 @@ public interface EmployeeController {
 
     ResponseEntity<byte[]> getPhoto(Integer employeeId);
 
-    ResponseEntity<String> uploadPhoto(Integer employeeId, MultipartFile file);
+//    ResponseEntity<String> uploadPhoto(Integer employeeId, MultipartFile file);
+//    PhotoDto uploadPhoto(Integer employeeId, MultipartFile file);
+    EmployeeReadDto uploadPhoto(Integer employeeId, MultipartFile file);
 }

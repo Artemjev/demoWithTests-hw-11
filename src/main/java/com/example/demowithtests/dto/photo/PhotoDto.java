@@ -15,7 +15,7 @@ public class PhotoDto {
     @Schema(description = "The field indicates whether the photo is active.", example = "true", required = true)
     public Boolean isActive = Boolean.TRUE;
 
-    @Schema(description = "The time when photo was added. The value is assigned automatically when adding an address")
+    @Schema(description = "The time when photo was added. The value is assigned automatically when adding an photo")
     public LocalDateTime addDate = LocalDateTime.now();
 
     @Schema(description = "Photo description.", example = "My worst photo ever", required = false)
