@@ -3,10 +3,7 @@ package com.example.demowithtests.domain;
 
 import com.example.demowithtests.util.validation.annotation.custom.CountryMatchesAddressesVerification;
 import com.example.demowithtests.util.validation.annotation.custom.MarkedAsDeleted;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.HashSet;
@@ -19,6 +16,7 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+//@ToString
 //@CountryMatchesAddresses- БУДУ ПОМНИТЬ! ЧТО В СЕРВИСАХ НЕЛЬЗЯ ЮЗАТЬ КАСТОМНЫЕ АННОТАЦИИ ВАЛИДАЦИИ ПОМЕЧЕННЫЕ @Constraint
 // т.е. теже что для контроллеров.
 @CountryMatchesAddressesVerification
@@ -58,4 +56,21 @@ public class Employee {
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "employee_id")
     private Set<Photo> photos = new HashSet<>();
+
+
+    //    @Override public String toString() {
+    //        return "Employee{" +
+    //               "id=" + id +
+    //               ", name='" + name + '\'' +
+    //               ", country='" + country + '\'' +
+    //               ", email='" + email + '\'' +
+    //               ", addresses=" + addresses +
+    //               ", gender=" + gender +
+    //               ", isDeleted=" + isDeleted +
+    //               ", isPrivate=" + isPrivate +
+    //               ", isConfirmed=" + isConfirmed +
+    //               ", photos=" + photos +
+    //               '}';
+    //}
+
 }

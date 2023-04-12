@@ -2,12 +2,14 @@ package com.example.demowithtests.web;
 
 import com.example.demowithtests.domain.Employee;
 import com.example.demowithtests.domain.Gender;
+import com.example.demowithtests.domain.Photo;
 import com.example.demowithtests.dto.employee.EmployeeCreateDto;
 import com.example.demowithtests.dto.employee.EmployeePatchDto;
 import com.example.demowithtests.dto.employee.EmployeePutDto;
 import com.example.demowithtests.dto.employee.EmployeeReadDto;
 import com.example.demowithtests.dto.photo.PhotoDto;
 import com.example.demowithtests.service.EmployeeService;
+import com.example.demowithtests.util.exception.NoPhotoEmployeeException;
 import com.example.demowithtests.util.mapper.EmployeeMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +17,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -42,9 +45,37 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     private final String LOG_START = "EmployeeController --> EmployeeControllerBean --> start of method:  ";
     private final String LOG_END = "EmployeeController --> EmployeeControllerBean --> finish of method:  ";
 
+
     //---------------------------------------------------------------------------------------
+    @GetMapping("/{id}/getPhotoDetails")
+    public Photo getPhotoDetails(@PathVariable Integer id) {
+
+        //        Optional<Photo> photoOpt = employeeService.getPhoto(id);
+        Photo result = employeeService.getPhoto(id)
+                .orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
+
+        return result;
+
+    }
 
 
+    //---------------------------------------------------------------------------------------
+    @GetMapping("/{id}/getPhoto")
+    public ResponseEntity<byte[]> getPhoto(@PathVariable Integer id) {
+
+        //        Optional<Photo> photoOpt = employeeService.getPhoto(id);
+        Photo photo = employeeService.getPhoto(id)
+                .orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_JPEG);
+
+        ResponseEntity<byte[]> result = new ResponseEntity<>(photo.getData(), headers, HttpStatus.OK);
+
+        return result;
+
+    }
+
+    //---------------------------------------------------------------------------------------
     @PatchMapping("/{id}/uploadPhoto")
     public ResponseEntity<String> uploadPhoto(@PathVariable Integer id, @RequestParam("file") MultipartFile file) {
         try {
@@ -76,7 +107,8 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
         Employee employee = employeeMapper.employeeCreateDtoToEmployee(createDto);
         EmployeeReadDto result = employeeMapper.employeeToEmployeeReadDto(employeeService.createEmployee(employee));
 
-        log.info(LOG_END + "EmployeeReadDto createEmployee(EmployeeCreateDto createDto = {}): result = {}", createDto,
+        log.info(LOG_END + "EmployeeReadDto createEmployee(EmployeeCreateDto createDto = {}): result = {}",
+                createDto,
                 result);
 
         return result;
@@ -90,7 +122,8 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
         log.info(LOG_START + "EmployeeReadDto putEmployee(Integer id  = {}, EmployeePutDto putDto = {})",
                 id, putDto);
         Employee employee = employeeMapper.employeePutDtoToEmployee(putDto);
-        EmployeeReadDto result = employeeMapper.employeeToEmployeeReadDto(employeeService.updateEmployee(id, employee));
+        EmployeeReadDto result = employeeMapper.employeeToEmployeeReadDto(
+                employeeService.updateEmployee(id, employee));
 
         log.info(LOG_END + "EmployeeReadDto putEmployee(Integer id  = {}, EmployeePutDto putDto = {}): result = {}",
                 id, putDto, result);
@@ -106,7 +139,8 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
         log.info(LOG_START + "EmployeeReadDto patchEmployee(Integer id  = {}, EmployeePatchDto patchDto = {})",
                 id, patchDto);
         Employee employee = employeeMapper.employeePatchDtoToEmployee(patchDto);
-        EmployeeReadDto result = employeeMapper.employeeToEmployeeReadDto(employeeService.patchEmployee(id, employee));
+        EmployeeReadDto result = employeeMapper.employeeToEmployeeReadDto(
+                employeeService.patchEmployee(id, employee));
 
         log.info(
                 LOG_END + "EmployeeReadDto patchEmployee(Integer id  = {}, EmployeePatchDto patchDto = {}): result = {}",
@@ -258,8 +292,9 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
         Page<EmployeeReadDto> result = employeeService.getEmployeesWithActiveAddressesInCountry(country, pageable)
                 .map(employeeMapper::employeeToEmployeeReadDto);
-        log.info(LOG_END + "Page<EmployeeReadDto> getAllActiveUsers(String country = {}, int page = {}, int size  = {})"
-                 + ": result = {}", country, page, size, result);
+        log.info(
+                LOG_END + "Page<EmployeeReadDto> getAllActiveUsers(String country = {}, int page = {}, int size  = {})"
+                + ": result = {}", country, page, size, result);
         return result;
     }
 
@@ -301,7 +336,8 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
                 .stream()
                 .map(employeeMapper::employeeToEmployeeReadDto)
                 .collect(Collectors.toList());
-        log.info(LOG_END + "List<EmployeeReadDto> handleEmployeesWithIsConfirmedFieldIsNull(): result = {}", result);
+        log.info(LOG_END + "List<EmployeeReadDto> handleEmployeesWithIsConfirmedFieldIsNull(): result = {}",
+                result);
         return result;
     }
 
@@ -327,7 +363,8 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     @ResponseStatus(HttpStatus.OK)
     public Page<EmployeeReadDto> getAllDeletedUsers(@RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
-        log.info(LOG_START + "Page<EmployeeReadDto> getAllDeletedUsers(int page  = {}, int size  = {})", page, size);
+        log.info(LOG_START + "Page<EmployeeReadDto> getAllDeletedUsers(int page  = {}, int size  = {})", page,
+                size);
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
         Page<EmployeeReadDto> result = employeeService.getAllDeleted(pageable)
                 .map(employeeMapper::employeeToEmployeeReadDto);

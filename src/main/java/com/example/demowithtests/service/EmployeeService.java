@@ -2,6 +2,7 @@ package com.example.demowithtests.service;
 
 import com.example.demowithtests.domain.Employee;
 import com.example.demowithtests.domain.Gender;
+import com.example.demowithtests.domain.Photo;
 import com.example.demowithtests.dto.employee.EmployeeReadDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -13,6 +14,7 @@ import java.util.Set;
 
 
 public interface EmployeeService {
+
     Employee getEmployee(Integer id);
 
     Employee createEmployee(Employee employee);
@@ -86,5 +88,8 @@ public interface EmployeeService {
 
     void sendEmailToEmployeesWhosePhotoIsExpired();
 
-    Employee addPhoto (Integer id, MultipartFile file);
+    Employee addPhoto(Integer id, MultipartFile file);
+
+    Optional<Photo> getPhoto(Integer employeeId);
+//    Photo getPhoto(Integer employeeId);
 }

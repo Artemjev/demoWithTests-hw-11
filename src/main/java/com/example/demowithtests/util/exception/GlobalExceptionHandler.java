@@ -13,6 +13,14 @@ import java.util.Date;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(NoPhotoEmployeeException.class)
+    public ResponseEntity<?> NoPhotoEmployeeException(NoPhotoEmployeeException exception,
+            WebRequest request) {
+        ErrorDetails errorDetails = new ErrorDetails(new Date(),
+                exception.getMessage(),
+                request.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.EXPECTATION_FAILED);
+    }
 
     @ExceptionHandler(CustomValidationException.class)
     public ResponseEntity<?> CustomValidationException(CustomValidationException exception,

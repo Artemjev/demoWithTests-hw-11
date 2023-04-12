@@ -5,6 +5,7 @@ import com.example.demowithtests.domain.Gender;
 import com.example.demowithtests.domain.Photo;
 import com.example.demowithtests.dto.employee.EmployeeReadDto;
 import com.example.demowithtests.repository.EmployeeRepository;
+import com.example.demowithtests.util.exception.NoPhotoEmployeeException;
 import com.example.demowithtests.util.exception.NoSuchEmployeeException;
 import com.example.demowithtests.util.exception.ResourceNotFoundException;
 import com.example.demowithtests.util.mail.Mailer;
@@ -39,6 +40,61 @@ public class EmployeeServiceBean implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final Mailer mailer;
 
+
+    //----------------------------------------------------------------------------------------------------
+    @Override
+    //    public Optional<Photo> getPhoto(Integer employeeId) {
+    public Optional<Photo> getPhoto(Integer employeeId) {
+
+        log.debug(LOG_START + "Photo getPhoto(Integer employeeId = {})", employeeId);
+
+        System.err.println(LOG_START + "Photo getPhoto(Integer employeeId=" + employeeId);
+
+        Employee employee = getEmployee(employeeId);
+
+        System.err.println("!!!!!!!!!!!!!!!!!! employee = " + employee);
+
+        System.err.println("!!!!!!!!!!!!!!!!!! employee.getPhotos() = " + employee.getPhotos());
+
+
+        //        Photo photo = employee.getPhotos()
+        //                .stream()
+        //                //                .findFirst()
+        //                .findAny()
+        //                .orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
+
+
+        Optional<Photo> photoOpt = employee.getPhotos()
+                .stream()
+                //                .findFirst()
+                .findAny();
+        //                .orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
+
+        System.err.println("!!!!!!!!!!!!!!!!!! photoOpt = " + photoOpt);
+
+        //        Photo result;
+        //        Photo result;
+
+        //        if (photoOpt.isPresent()){
+        //            System.err.println("!!!!!!!!!!!!!!!!!! (photoOpt.isPresent()++++++");
+        //            result = photoOpt.orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
+        //        }else {
+        //            System.err.println("!!!!!!!!!!!!!!!!!! (photoOpt.isPresent()------");
+        //            throw new NoPhotoEmployeeException("Employee has no photo!");
+        //        }
+
+        //        Photo result = photoOpt.orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
+
+        //        System.err.println("!!!!!!!!!!!!!!!!!! photo = " + photo);
+
+
+        Optional<Photo> result = photoOpt;
+
+        log.debug(LOG_END + "Photo getPhoto(Integer employeeId = {}): result = {}", employeeId, result);
+        System.err.println(LOG_END + "Photo getPhoto(Integer employeeId = {}): result = " + result);
+
+        return result;
+    }
 
     //----------------------------------------------------------------------------------------------------
     @Override
@@ -131,7 +187,8 @@ public class EmployeeServiceBean implements EmployeeService {
 
     //----------------------------------------------------------------------------------------------------
     @Override
-    @Transactional @CustomValidationAnnotations({MarkedAsDeleted.class})
+    @Transactional
+    @CustomValidationAnnotations({MarkedAsDeleted.class})
     public Employee updateEmployee(Integer id, Employee employee) {
         log.debug(LOG_START + "Employee updateEmployee(Integer id = {}, Employee employee = {})", id, employee);
         return employeeRepository.findById(id).map(e -> {
@@ -182,7 +239,8 @@ public class EmployeeServiceBean implements EmployeeService {
     }
 
     //----------------------------------------------------------------------------------------------------
-    @Override public Page<Employee> getAllWithPagination(Pageable pageable) {
+    @Override
+    public Page<Employee> getAllWithPagination(Pageable pageable) {
         log.debug(LOG_START + "Page<Employee> getAllWithPagination(Pageable pageable = {})", pageable);
         Page<Employee> result = employeeRepository.findAll(pageable);
         log.debug(LOG_END + "Employee createEmployee(Employee employee): result = {}", result);
@@ -190,7 +248,8 @@ public class EmployeeServiceBean implements EmployeeService {
     }
 
     //----------------------------------------------------------------------------------------------------
-    @Override public void deleteAll() {
+    @Override
+    public void deleteAll() {
         log.debug(LOG_START + "void deleteAll()");
         employeeRepository.deleteAll();
         log.debug(LOG_END + "void deleteAll()");

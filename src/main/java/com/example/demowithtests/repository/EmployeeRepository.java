@@ -1,6 +1,7 @@
 package com.example.demowithtests.repository;
 
 import com.example.demowithtests.domain.Employee;
+import com.example.demowithtests.domain.Photo;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -42,4 +43,14 @@ public interface EmployeeRepository extends JpaRepository<Employee, Integer> {
     List<Employee> queryEmployeeByIsPrivateIsNull();
 
     List<Employee> queryEmployeeByIsConfirmedNull();
+
+//    @Query(value = "select photos.* from users join photos on users.id = photos.employee_id where users.id = " +
+//                   ":employeeId",
+//           nativeQuery = true)
+//    List<Photo> getPhoto(Integer employeeId);
+
+    @Query(value = "select * from photos where photos.id = :photoId",
+           nativeQuery = true)
+    Photo getPhotoByPhotoId(Integer photoId);
+//    List<Photo> getPhotoByPhotoId(Integer photoId);
 }

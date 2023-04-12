@@ -31,8 +31,8 @@ logging:
     console: "%d %-5level %logger : %msg%n"
   level:
     com.example.demowithtests: debug
-    org.springframework: info
-    org.hibernate: info
+    org.springframework: debug
+    org.hibernate: debug
 # Server configuration
 server:
   port: 8087 #set your port
