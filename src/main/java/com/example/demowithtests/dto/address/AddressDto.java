@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Data
 public class AddressDto {
 
-    public Long id;
+    public Integer id;
 
     @Schema(description = "The field indicates whether the address is active.", example = "true", required = true)
     public Boolean isActive = Boolean.TRUE;

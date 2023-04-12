@@ -16,9 +16,6 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-//@ToString
-//@CountryMatchesAddresses- БУДУ ПОМНИТЬ! ЧТО В СЕРВИСАХ НЕЛЬЗЯ ЮЗАТЬ КАСТОМНЫЕ АННОТАЦИИ ВАЛИДАЦИИ ПОМЕЧЕННЫЕ @Constraint
-// т.е. теже что для контроллеров.
 @CountryMatchesAddressesVerification
 public class Employee {
 
@@ -32,45 +29,26 @@ public class Employee {
 
     private String email;
 
+    @Enumerated(EnumType.STRING)
+    private Gender gender;
+
+
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "employee_id")
     @OrderBy("country asc, id desc")
     private Set<Address> addresses = new HashSet<>();
 
-    @Enumerated(EnumType.STRING)
-    private Gender gender;
-
-    @MarkedAsDeleted(value = false)
-    private Boolean isDeleted = Boolean.FALSE;
-
-    private Boolean isPrivate = Boolean.FALSE;
-
-    /**
-     * Не бизнесовое поле:
-     * после заполнения данных о работнике, письмо с подверждением  данных отправляется на
-     * указанный email. Пока работник их не подтвердит (ссылка в письме отправляет запрос на сервер),
-     * его учетная запись будет неактивна в системе.
-     */
-    private Boolean isConfirmed = Boolean.FALSE;
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "employee_id")
     private Set<Photo> photos = new HashSet<>();
 
 
-    //    @Override public String toString() {
-    //        return "Employee{" +
-    //               "id=" + id +
-    //               ", name='" + name + '\'' +
-    //               ", country='" + country + '\'' +
-    //               ", email='" + email + '\'' +
-    //               ", addresses=" + addresses +
-    //               ", gender=" + gender +
-    //               ", isDeleted=" + isDeleted +
-    //               ", isPrivate=" + isPrivate +
-    //               ", isConfirmed=" + isConfirmed +
-    //               ", photos=" + photos +
-    //               '}';
-    //}
+    @MarkedAsDeleted(value = false)
+    private Boolean isDeleted = Boolean.FALSE;
+
+    private Boolean isPrivate = Boolean.FALSE;
+
+    private Boolean isConfirmed = Boolean.FALSE;
 
 }

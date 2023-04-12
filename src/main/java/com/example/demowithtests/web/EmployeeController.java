@@ -2,12 +2,18 @@ package com.example.demowithtests.web;
 
 import com.example.demowithtests.domain.Employee;
 import com.example.demowithtests.domain.Gender;
+import com.example.demowithtests.domain.Photo;
 import com.example.demowithtests.dto.employee.EmployeeCreateDto;
 import com.example.demowithtests.dto.employee.EmployeePatchDto;
 import com.example.demowithtests.dto.employee.EmployeePutDto;
 import com.example.demowithtests.dto.employee.EmployeeReadDto;
+import com.example.demowithtests.dto.photo.PhotoDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,34 +22,26 @@ import java.util.Set;
 
 public interface EmployeeController {
 
-    //Получение юзера по id
     EmployeeReadDto getEmployee(Integer id);
 
-    //Добовление юзера в базу данных
     EmployeeReadDto createEmployee(EmployeeCreateDto createDto);
 
-    //Обновление юзера (patch)
     EmployeeReadDto patchEmployee(Integer id, EmployeePatchDto patchDto);
 
-    //Full update юзера (put)
     EmployeeReadDto putEmployee(Integer id, EmployeePutDto putDto);
 
-    //Помечаем юзера c указанным id  как удаленного в бд (setIsDeleted = true).
     void markEmployeeAsDeleted(Integer id);
 
-    //Удаляем юзера c указанным id из бд.
     void deleteEmployee(Integer id);
 
-    //Получение списка всех юзеров
     List<EmployeeReadDto> getAllEmployees();
 
-    //Получение 1 страницы юзеров
     Page<EmployeeReadDto> getPageOfEmployees(int page, int size);
 
-    //Удаление всех юзеров
     void removeAllUsers();
 
-    Page<EmployeeReadDto> getEmployeesByCountry(String country, int page, int size, List<String> sortList, Sort.Direction sortOrder);
+    Page<EmployeeReadDto> getEmployeesByCountry(String country, int page, int size, List<String> sortList,
+            Sort.Direction sortOrder);
 
     Set<String> getAllEmployeesCountries();
 
@@ -65,16 +63,10 @@ public interface EmployeeController {
 
     Page<EmployeeReadDto> getAllDeletedUsers(int page, int size);
 
-    /**
-     * Метод отправляет на почту юзера письмо с запросом на подтверждение.
-     * Из письма юзер должен дернуть эндпоинт "/users/{id}/confirmed" (ссылка в тексте письма специальная),
-     * который через контроллер вызовет метод сервиса confirm(id) и поменяет поле сущности is_confirmed в БД.
-     */
     void sendConfirm(Integer id);
 
     void confirm(Integer id);
 
-    // точка входа на массовую генерацию
     Long generateEmployees(Integer quantity, Boolean clear);
 
     Long employeeMassPutUpdate();
@@ -84,4 +76,14 @@ public interface EmployeeController {
     List<EmployeeReadDto> getEmployeesWithExpiredPhotos();
 
     void sendEmailToEmployeesWhosePhotoIsExpired();
+
+    //---------------------------------------------------------------------------------\
+    //    todo дщбавить описание в свагер
+//    Photo getPhotoDetails(Integer employeeId);
+
+    PhotoDto getPhotoDetails(Integer employeeId);
+
+    ResponseEntity<byte[]> getPhoto(Integer employeeId);
+
+    ResponseEntity<String> uploadPhoto(Integer employeeId, MultipartFile file);
 }

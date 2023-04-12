@@ -11,6 +11,7 @@ import com.example.demowithtests.dto.photo.PhotoDto;
 import com.example.demowithtests.service.EmployeeService;
 import com.example.demowithtests.util.exception.NoPhotoEmployeeException;
 import com.example.demowithtests.util.mapper.EmployeeMapper;
+import com.example.demowithtests.util.mapper.PhotoMapper;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -41,18 +42,34 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
 
     private final EmployeeService employeeService;
     private final EmployeeMapper employeeMapper;
+    private final PhotoMapper photoMapper;
 
     private final String LOG_START = "EmployeeController --> EmployeeControllerBean --> start of method:  ";
     private final String LOG_END = "EmployeeController --> EmployeeControllerBean --> finish of method:  ";
 
 
-    //---------------------------------------------------------------------------------------
-    @GetMapping("/{id}/getPhotoDetails")
-    public Photo getPhotoDetails(@PathVariable Integer id) {
+//    //---------------------------------------------------------------------------------------
+//    @Override
+//    @GetMapping("/{employeeId}/getPhotoDetails")
+//    public Photo getPhotoDetails(@PathVariable Integer employeeId) {
+//
+//        Photo result = employeeService.getPhoto(employeeId)
+//                .orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
+//
+//        return result;
+//
+//    }
 
-        //        Optional<Photo> photoOpt = employeeService.getPhoto(id);
-        Photo result = employeeService.getPhoto(id)
+
+    //---------------------------------------------------------------------------------------
+    @Override
+    @GetMapping("/{employeeId}/getPhotoDetails")
+    public PhotoDto getPhotoDetails(@PathVariable Integer employeeId) {
+
+        Photo photo = employeeService.getPhoto(employeeId)
                 .orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
+
+        PhotoDto result = photoMapper.photoToPhotoDto(photo);
 
         return result;
 
@@ -60,11 +77,12 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
 
 
     //---------------------------------------------------------------------------------------
-    @GetMapping("/{id}/getPhoto")
-    public ResponseEntity<byte[]> getPhoto(@PathVariable Integer id) {
+    @Override
+    @GetMapping("/{employeeId}/getPhoto")
+    public ResponseEntity<byte[]> getPhoto(@PathVariable Integer employeeId) {
 
         //        Optional<Photo> photoOpt = employeeService.getPhoto(id);
-        Photo photo = employeeService.getPhoto(id)
+        Photo photo = employeeService.getPhoto(employeeId)
                 .orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.IMAGE_JPEG);
@@ -76,10 +94,11 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     }
 
     //---------------------------------------------------------------------------------------
-    @PatchMapping("/{id}/uploadPhoto")
-    public ResponseEntity<String> uploadPhoto(@PathVariable Integer id, @RequestParam("file") MultipartFile file) {
+    @Override
+    @PatchMapping("/{employeeId}/uploadPhoto")
+    public ResponseEntity<String> uploadPhoto(@PathVariable Integer employeeId, @RequestParam("file") MultipartFile file) {
         try {
-            employeeService.addPhoto(id, file);
+            employeeService.addPhoto(employeeId, file);
             return ResponseEntity.ok().body("Photo has been uploaded successfully.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

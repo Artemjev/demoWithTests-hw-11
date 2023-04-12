@@ -4,19 +4,25 @@ import lombok.Data;
 
 import javax.persistence.*;
 
+
 @Entity
 @Table(name = "addresses")
 @Data
 public class Address {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
+
     @Column(name = "address_has_active")
     private Boolean isActive = Boolean.TRUE;
+
     @Column(name = "country")
     private String country;
+
     @Column(name = "city")
     private String city;
+
     @Column(name = "street")
     private String street;
 }
