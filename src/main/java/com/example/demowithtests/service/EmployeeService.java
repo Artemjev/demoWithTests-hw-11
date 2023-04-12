@@ -3,10 +3,8 @@ package com.example.demowithtests.service;
 import com.example.demowithtests.domain.Employee;
 import com.example.demowithtests.domain.Gender;
 import com.example.demowithtests.domain.Photo;
-import com.example.demowithtests.dto.employee.EmployeeReadDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,7 +12,6 @@ import java.util.Set;
 
 
 public interface EmployeeService {
-
     Employee getEmployee(Integer id);
 
     Employee createEmployee(Employee employee);
@@ -51,7 +48,6 @@ public interface EmployeeService {
      */
     Page<Employee> getByCountryAndSort(String country, int page, int size, List<String> sortList, String sortOrder);
 
-
     /**
      * Get all the countries of all the employees.
      *
@@ -59,14 +55,12 @@ public interface EmployeeService {
      */
     Set<String> getAllEmployeesCountries();
 
-
     /**
      * It returns a list of countries sorted by name.
      *
      * @return A list of countries in alphabetical order.
      */
     List<String> getAllEmployeesCountriesSorted();
-
 
     Optional<List<String>> getEmails();
 
@@ -88,8 +82,7 @@ public interface EmployeeService {
 
     void sendEmailToEmployeesWhosePhotoIsExpired();
 
-    Employee addPhoto(Integer id, MultipartFile file);
+    Employee addPhoto(Integer employeeId, Photo photo);
 
-    Optional<Photo> getPhoto(Integer employeeId);
-//    Photo getPhoto(Integer employeeId);
+    Optional<Photo> getEmployeeActivePhoto(Integer employeeId);
 }

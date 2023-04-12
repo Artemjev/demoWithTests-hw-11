@@ -2,7 +2,7 @@ package com.example.demowithtests.dto.employee;
 
 import com.example.demowithtests.domain.Gender;
 import com.example.demowithtests.dto.address.AddressDto;
-import com.example.demowithtests.dto.photo.PhotoDto;
+import com.example.demowithtests.dto.photo.PhotoReadDto;
 import com.example.demowithtests.util.validation.annotation.constraints.CountryMatchesAddressesConstraint;
 import com.example.demowithtests.util.validation.annotation.constraints.IsBooleanFieldValidConstraint;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -59,5 +59,5 @@ public class EmployeePutDto {
     public Boolean isConfirmed;
 
     @Schema(description = "Employee photos set.", required = false)
-    public Set<PhotoDto> photos;
+    public Set<PhotoReadDto> photos;
 }

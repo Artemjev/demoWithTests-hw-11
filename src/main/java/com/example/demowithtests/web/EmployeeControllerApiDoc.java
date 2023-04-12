@@ -1,12 +1,11 @@
 package com.example.demowithtests.web;
 
-import com.example.demowithtests.domain.Employee;
 import com.example.demowithtests.domain.Gender;
 import com.example.demowithtests.dto.employee.EmployeeCreateDto;
 import com.example.demowithtests.dto.employee.EmployeePatchDto;
 import com.example.demowithtests.dto.employee.EmployeePutDto;
 import com.example.demowithtests.dto.employee.EmployeeReadDto;
-import com.example.demowithtests.dto.photo.PhotoDto;
+import com.example.demowithtests.dto.photo.PhotoReadDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -344,9 +343,35 @@ import java.util.Set;
     void sendEmailToEmployeesWhosePhotoIsExpired();
 
     @Override
-    PhotoDto getPhotoDetails(Integer employeeId);
+    @Operation(summary = "This is endpoint to return active photo of employee by his id.",
+               description = "Create request to get active photo of employee", tags = {"Photo"})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK. Active photo has been found"),
+                           @ApiResponse(responseCode = "204", description = "NO CONTENT. Employee hasn't been found"),
+                           @ApiResponse(responseCode = "400", description = "BAD REQUEST. Invalid input"),
+                           @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
+                           @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
+                           @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
+    PhotoReadDto getEmployeeActivePhoto(Integer employeeId);
+
     @Override
-    ResponseEntity<byte[]> getPhoto(Integer employeeId);
-//    @Override
-//    ResponseEntity<String> uploadPhoto(Integer employeeId, MultipartFile file);
+    @Operation(summary = "This is endpoint to return image of active photo of employee by his id.",
+               description = "Create request to get image of active photo of employee", tags = {"Photo"})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK. Active photo has been found"),
+                           @ApiResponse(responseCode = "204", description = "NO CONTENT. Employee hasn't been found"),
+                           @ApiResponse(responseCode = "400", description = "BAD REQUEST. Invalid input"),
+                           @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
+                           @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
+                           @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
+    ResponseEntity<byte[]> getPhotoImage(Integer employeeId);
+
+    @Override
+    @Operation(summary = "Endpoint  is used to upload new photo of employee.",
+               description = "Create request to upload new photo of employee", tags = {"Photo"})
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "OK. Uploaded"),
+                           @ApiResponse(responseCode = "204", description = "NO CONTENT. Employee hasn't been found"),
+                           @ApiResponse(responseCode = "400", description = "BAD REQUEST. Invalid input"),
+                           @ApiResponse(responseCode = "401", description = "UNAUTHORIZED. Authentication is needed"),
+                           @ApiResponse(responseCode = "403", description = "FORBIDDEN. Access denied"),
+                           @ApiResponse(responseCode = "404", description = "NOT FOUND. Resource was not found")})
+    EmployeeReadDto uploadPhoto(Integer employeeId, MultipartFile file);
 }

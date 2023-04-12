@@ -1,18 +1,14 @@
 package com.example.demowithtests.web;
 
-import com.example.demowithtests.domain.Employee;
 import com.example.demowithtests.domain.Gender;
-import com.example.demowithtests.domain.Photo;
 import com.example.demowithtests.dto.employee.EmployeeCreateDto;
 import com.example.demowithtests.dto.employee.EmployeePatchDto;
 import com.example.demowithtests.dto.employee.EmployeePutDto;
 import com.example.demowithtests.dto.employee.EmployeeReadDto;
-import com.example.demowithtests.dto.photo.PhotoDto;
+import com.example.demowithtests.dto.photo.PhotoReadDto;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
@@ -77,15 +73,9 @@ public interface EmployeeController {
 
     void sendEmailToEmployeesWhosePhotoIsExpired();
 
-    //---------------------------------------------------------------------------------\
-    //    todo дщбавить описание в свагер
-//    Photo getPhotoDetails(Integer employeeId);
+    PhotoReadDto getEmployeeActivePhoto(Integer employeeId);
 
-    PhotoDto getPhotoDetails(Integer employeeId);
+    ResponseEntity<byte[]> getPhotoImage(Integer employeeId);
 
-    ResponseEntity<byte[]> getPhoto(Integer employeeId);
-
-//    ResponseEntity<String> uploadPhoto(Integer employeeId, MultipartFile file);
-//    PhotoDto uploadPhoto(Integer employeeId, MultipartFile file);
     EmployeeReadDto uploadPhoto(Integer employeeId, MultipartFile file);
 }

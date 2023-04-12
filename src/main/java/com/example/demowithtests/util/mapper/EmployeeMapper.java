@@ -5,7 +5,6 @@ import com.example.demowithtests.dto.employee.EmployeeCreateDto;
 import com.example.demowithtests.dto.employee.EmployeePatchDto;
 import com.example.demowithtests.dto.employee.EmployeePutDto;
 import com.example.demowithtests.dto.employee.EmployeeReadDto;
-import org.mapstruct.factory.Mappers;
 import org.mapstruct.Mapper;
 
 import java.util.HashSet;
@@ -16,7 +15,6 @@ import java.util.stream.Collectors;
 public interface EmployeeMapper {
     //    EmployeeMapper INSTANCE = Mappers.getMapper(EmployeeMapper.class);
     //    - закоментил шоб не юзать в коде, потом, наверное,  можно и раскоментить
-
     //-------------------------------------------------------------------------------------------
     //Переопределял метод маппера, что бы корректно отображать фронту приватных сотрудников (скрываем данные, если
     // isPrivate=true).
@@ -33,8 +31,6 @@ public interface EmployeeMapper {
                         .country(employee.getCountry())
                         .email(employee.getEmail())
                         .addresses(employee.getAddresses().stream()
-
-
                                 .map(address -> AddressMapper.INSTANCE.addressToAddressDto(address))
                                 .collect(Collectors.toSet()))
                         .gender(employee.getGender())

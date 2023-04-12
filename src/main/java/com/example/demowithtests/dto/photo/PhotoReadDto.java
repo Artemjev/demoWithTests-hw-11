@@ -1,5 +1,6 @@
 package com.example.demowithtests.dto.photo;
 
+import com.example.demowithtests.util.validation.annotation.constraints.PhotoFileConstraint;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import lombok.ToString;
@@ -8,7 +9,7 @@ import java.time.LocalDateTime;
 
 
 @Data
-public class PhotoDto {
+public class PhotoReadDto {
 
     public Integer id;
 
@@ -24,6 +25,7 @@ public class PhotoDto {
     @Schema(description = "Name of file.", example = "my-photo", required = true)
     public String fileName;
 
+    @PhotoFileConstraint(value = "image/jpeg")
     @Schema(description = "Type of file.", example = "jpeg", required = true)
     public String fileType;
 

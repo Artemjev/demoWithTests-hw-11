@@ -7,7 +7,7 @@ import com.example.demowithtests.dto.employee.EmployeeCreateDto;
 import com.example.demowithtests.dto.employee.EmployeePatchDto;
 import com.example.demowithtests.dto.employee.EmployeePutDto;
 import com.example.demowithtests.dto.employee.EmployeeReadDto;
-import com.example.demowithtests.dto.photo.PhotoDto;
+import com.example.demowithtests.dto.photo.PhotoReadDto;
 import com.example.demowithtests.service.EmployeeService;
 import com.example.demowithtests.util.exception.NoPhotoEmployeeException;
 import com.example.demowithtests.util.mapper.EmployeeMapper;
@@ -22,10 +22,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -39,47 +41,13 @@ import java.util.stream.Collectors;
 @RequestMapping(value = "/api/users", produces = MediaType.APPLICATION_JSON_VALUE)
 @Slf4j
 public class EmployeeControllerBean implements EmployeeControllerApiDoc {
+    private final String LOG_START = "EmployeeController --> EmployeeControllerBean --> start of method:  ";
+    private final String LOG_END = "EmployeeController --> EmployeeControllerBean --> finish of method:  ";
 
     private final EmployeeService employeeService;
     private final EmployeeMapper employeeMapper;
     private final PhotoMapper photoMapper;
 
-    private final String LOG_START = "EmployeeController --> EmployeeControllerBean --> start of method:  ";
-    private final String LOG_END = "EmployeeController --> EmployeeControllerBean --> finish of method:  ";
-
-
-    //---------------------------------------------------------------------------------------
-    @Override
-    @GetMapping("/{employeeId}/getPhotoDetails")
-    public PhotoDto getPhotoDetails(@PathVariable Integer employeeId) {
-        log.info(LOG_START + "PhotoDto getPhotoDetails(Integer employeeId = {})", employeeId);
-
-        Photo photo = employeeService.getPhoto(employeeId)
-                .orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
-
-        PhotoDto result = photoMapper.photoToPhotoDto(photo);
-
-        log.info(LOG_START + "PhotoDto getPhotoDetails(Integer employeeId = {}): result = {}", employeeId, result);
-        return result;
-    }
-
-    //---------------------------------------------------------------------------------------
-    @Override
-    @GetMapping("/{employeeId}/getPhoto")
-    public ResponseEntity<byte[]> getPhoto(@PathVariable Integer employeeId) {
-        log.info(LOG_START + "ResponseEntity<byte[]> getPhoto(Integer employeeId = {})", employeeId);
-
-        Photo photo = employeeService.getPhoto(employeeId)
-                .orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.IMAGE_JPEG);
-
-        ResponseEntity<byte[]> result = new ResponseEntity<>(photo.getData(), headers, HttpStatus.OK);
-
-        log.info(LOG_END + "ResponseEntity<byte[]> getPhoto(Integer employeeId = {}): result = {}", employeeId, result);
-        return result;
-    }
 
     //---------------------------------------------------------------------------------------
     @Override
@@ -88,16 +56,60 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
         log.info(LOG_START + "ResponseEntity<String> uploadPhoto(Integer employeeId = {}, MultipartFile file = {})",
                 employeeId, file);
 
-        Employee updatedEmployee = employeeService.addPhoto(employeeId, file);
-
+        Photo newPhoto = new Photo();
+        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+        newPhoto.setFileName(fileName);
+        newPhoto.setFileType(file.getContentType());
+        try {
+            newPhoto.setData(file.getBytes());
+        } catch (IOException e) {
+            throw new RuntimeException(e);//!!todo
+        }
+        Employee updatedEmployee = employeeService.addPhoto(employeeId, newPhoto);
         EmployeeReadDto result = employeeMapper.employeeToEmployeeReadDto(updatedEmployee);
-
         log.info(LOG_END + "ResponseEntity<String> uploadPhoto(Integer employeeId = {}, MultipartFile file = {}):" +
                  " result = {}", employeeId, file, result);
         return result;
     }
 
     //---------------------------------------------------------------------------------------
+    @Override
+    @GetMapping("/{employeeId}/photo")
+    public PhotoReadDto getEmployeeActivePhoto(@PathVariable Integer employeeId) {
+        log.info(LOG_START + "PhotoReadDto getPhotoDetails(Integer employeeId = {})", employeeId);
+        Photo photo = employeeService.getEmployeeActivePhoto(employeeId)
+                .orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
+        PhotoReadDto result = photoMapper.photoToPhotoDto(photo);
+        log.info(LOG_START + "PhotoReadDto getPhotoDetails(Integer employeeId = {}): result = {}", employeeId, result);
+        return result;
+    }
+
+    //---------------------------------------------------------------------------------------
+    @Override
+    @GetMapping("/{employeeId}/image")
+    public ResponseEntity<byte[]> getPhotoImage(@PathVariable Integer employeeId) {
+        log.info(LOG_START + "ResponseEntity<byte[]> getPhoto(Integer employeeId = {})", employeeId);
+        Photo photo = employeeService.getEmployeeActivePhoto(employeeId)
+                .orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_JPEG);
+        ResponseEntity<byte[]> result = new ResponseEntity<>(photo.getData(), headers, HttpStatus.OK);
+        log.info(LOG_END + "ResponseEntity<byte[]> getPhoto(Integer employeeId = {}): result = {}", employeeId, result);
+        return result;
+    }
+    //---------------------------------------------------------------------------------------
+    //                    TODO need to implement!
+    //    @GetMapping("/{employeeId}/image/{photoId}")
+    //    public ResponseEntity<byte[]> getPhotoImage(@PathVariable Integer employeeId, @PathVariable Integer photoId) {
+    //        return null;
+    //    }
+    //---------------------------------------------------------------------------------------
+    //    @GetMapping("/{employeeId}/photo/{photoId}")
+    //    public PhotoReadDto getEmployeePhotoById(@PathVariable Integer employeeId, @PathVariable Integer photoId) {
+    //        return null;
+    //    }
+    //---------------------------------------------------------------------------------------
+
     @Override
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
@@ -131,10 +143,8 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
         Employee employee = employeeMapper.employeePutDtoToEmployee(putDto);
         EmployeeReadDto result = employeeMapper.employeeToEmployeeReadDto(
                 employeeService.updateEmployee(id, employee));
-
         log.info(LOG_END + "EmployeeReadDto putEmployee(Integer id  = {}, EmployeePutDto putDto = {}): result = {}",
                 id, putDto, result);
-
         return result;
     }
 
@@ -148,11 +158,8 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
         Employee employee = employeeMapper.employeePatchDtoToEmployee(patchDto);
         EmployeeReadDto result = employeeMapper.employeeToEmployeeReadDto(
                 employeeService.patchEmployee(id, employee));
-
-        log.info(
-                LOG_END + "EmployeeReadDto patchEmployee(Integer id  = {}, EmployeePatchDto patchDto = {}): result = {}",
-                id, patchDto, result);
-
+        log.info(LOG_END + "EmployeeReadDto patchEmployee(Integer id  = {}, EmployeePatchDto patchDto = {}): " +
+                 "result = {}", id, patchDto, result);
         return result;
     }
 
@@ -173,7 +180,6 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
         log.info(LOG_START + "void deleteEmployee(Integer id  = {})", id);
         employeeService.deleteEmployee(id);
         log.info(LOG_END + "void deleteEmployee(Integer id  = {})", id);
-
     }
 
     //---------------------------------------------------------------------------------------
@@ -230,7 +236,6 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
         Page<EmployeeReadDto> result =
                 employeeService.getByCountryAndSort(country, page, size, sortList, sortOrder.toString())
                         .map(employeeMapper::employeeToEmployeeReadDto);
-
         log.info(LOG_END + "Page<EmployeeReadDto> getEmployeesByCountry(String country = {}, int page = {}, " +
                  "int size = {}, List<String> sortList = {}, Sort.Direction sortOrder = {}): result = {}",
                 country, page, size, sortList, sortOrder, result);
@@ -299,9 +304,8 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
         Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.ASC, "name"));
         Page<EmployeeReadDto> result = employeeService.getEmployeesWithActiveAddressesInCountry(country, pageable)
                 .map(employeeMapper::employeeToEmployeeReadDto);
-        log.info(
-                LOG_END + "Page<EmployeeReadDto> getAllActiveUsers(String country = {}, int page = {}, int size  = {})"
-                + ": result = {}", country, page, size, result);
+        log.info(LOG_END + "Page<EmployeeReadDto> getAllActiveUsers(String country = {}, int page = {}, int size  = {})"
+                 + ": result = {}", country, page, size, result);
         return result;
     }
 
@@ -361,7 +365,6 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
         log.info(LOG_END + "Page<EmployeeReadDto> getAllActiveUsers(int page  = {}, int size  = {}): result = {}",
                 page, size, result);
         return result;
-
     }
 
     //---------------------------------------------------------------------------------------
@@ -381,7 +384,6 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     }
 
     //---------------------------------------------------------------------------------------
-
     /**
      * Метод отправляет на почту юзера письмо с запросом на подтверждение.
      * Из письма юзер должен дернуть эндпоинт "/users/{id}/confirmed" (ссылка в тексте письма специальная),
@@ -397,8 +399,7 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     }
 
     //---------------------------------------------------------------------------------------
-    // @PatchMapping("/users/{id}/confirmed")
-    // Get - костыль, так из письма проще этот эндпоинт дергать.
+    // Get - костыль. так из письма проще этот эндпоинт дергать.
     @Override
     @GetMapping("/{id}/confirmed")
     @ResponseStatus(HttpStatus.OK)
@@ -408,9 +409,7 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
         log.info(LOG_END + "void confirm(Integer id  = {})", id);
     }
 
-
     //---------------------------------------------------------------------------------------
-    // точка входа на массовую генерацию
     @Override
     @PostMapping("/generate/{quantity}")
     @ResponseStatus(HttpStatus.CREATED)

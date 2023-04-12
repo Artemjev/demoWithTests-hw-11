@@ -5,8 +5,8 @@ import com.example.demowithtests.util.validation.annotation.constraints.IsBoolea
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-public class BooleanFieldValidator implements ConstraintValidator<IsBooleanFieldValidConstraint, Boolean> {
 
+public class BooleanFieldValidator implements ConstraintValidator<IsBooleanFieldValidConstraint, Boolean> {
     Boolean expectedValue;
 
     @Override

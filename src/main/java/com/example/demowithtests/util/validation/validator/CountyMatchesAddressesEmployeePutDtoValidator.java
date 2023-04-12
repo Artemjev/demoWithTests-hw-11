@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 
 public class CountyMatchesAddressesEmployeePutDtoValidator implements
-                                            ConstraintValidator<CountryMatchesAddressesConstraint, EmployeePutDto> {
+        ConstraintValidator<CountryMatchesAddressesConstraint, EmployeePutDto> {
 
     @Override
     public void initialize(CountryMatchesAddressesConstraint constraintAnnotation) {
@@ -44,12 +44,13 @@ public class CountyMatchesAddressesEmployeePutDtoValidator implements
                 .collect(Collectors.toSet());
         return countriesFromAddresses.contains(countryValue);
     }
+
     //----------------------------------------------------------------------------------------------------
     @NotNull
     private Field getFieldByName(Field[] fields, String fieldName) {
         Field countryField =
                 Arrays.stream(fields)
-                        //                      .peek(f -> f.setAccessible(true))   // - не обязательно, т.к. в дто поля публичные
+                        //.peek(f -> f.setAccessible(true))   // - не обязательно, т.к. в дто поля публичные
                         .filter(f -> f.getName().equals(fieldName))
                         .findAny()
                         .orElseThrow(() -> new CustomValidationException(

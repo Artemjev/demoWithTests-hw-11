@@ -3,9 +3,7 @@ package com.example.demowithtests.service;
 import com.example.demowithtests.domain.Employee;
 import com.example.demowithtests.domain.Gender;
 import com.example.demowithtests.domain.Photo;
-import com.example.demowithtests.dto.employee.EmployeeReadDto;
 import com.example.demowithtests.repository.EmployeeRepository;
-import com.example.demowithtests.util.exception.NoPhotoEmployeeException;
 import com.example.demowithtests.util.exception.NoSuchEmployeeException;
 import com.example.demowithtests.util.exception.ResourceNotFoundException;
 import com.example.demowithtests.util.mail.Mailer;
@@ -20,10 +18,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,88 +28,41 @@ import java.util.stream.Stream;
 @AllArgsConstructor
 @Slf4j @Service
 public class EmployeeServiceBean implements EmployeeService {
-
     private final String LOG_START = "EmployeeService --> EmployeeServiceBean --> start of method:  ";
     private final String LOG_END = "EmployeeService --> EmployeeServiceBean --> finish of method:  ";
 
     private final EmployeeRepository employeeRepository;
     private final Mailer mailer;
 
-
     //----------------------------------------------------------------------------------------------------
     @Override
-    //    public Optional<Photo> getPhoto(Integer employeeId) {
-    public Optional<Photo> getPhoto(Integer employeeId) {
-
-        log.debug(LOG_START + "Photo getPhoto(Integer employeeId = {})", employeeId);
-
-        System.err.println(LOG_START + "Photo getPhoto(Integer employeeId=" + employeeId);
-
-        Employee employee = getEmployee(employeeId);
-
-        System.err.println("!!!!!!!!!!!!!!!!!! employee = " + employee);
-
-        System.err.println("!!!!!!!!!!!!!!!!!! employee.getPhotos() = " + employee.getPhotos());
-
-
-        //        Photo photo = employee.getPhotos()
-        //                .stream()
-        //                //                .findFirst()
-        //                .findAny()
-        //                .orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
-
-
-        Optional<Photo> photoOpt = employee.getPhotos()
+    public Optional<Photo> getEmployeeActivePhoto(Integer employeeId) {
+        log.debug(LOG_START + "Optional<Photo> getEmployeeActivePhoto(Integer employeeId = {})", employeeId);
+        Employee employee = this.getEmployee(employeeId);
+        Optional<Photo> result = employee.getPhotos()
                 .stream()
-                //                .findFirst()
-                .findAny();
-        //                .orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
-
-        System.err.println("!!!!!!!!!!!!!!!!!! photoOpt = " + photoOpt);
-
-        //        Photo result;
-        //        Photo result;
-
-        //        if (photoOpt.isPresent()){
-        //            System.err.println("!!!!!!!!!!!!!!!!!! (photoOpt.isPresent()++++++");
-        //            result = photoOpt.orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
-        //        }else {
-        //            System.err.println("!!!!!!!!!!!!!!!!!! (photoOpt.isPresent()------");
-        //            throw new NoPhotoEmployeeException("Employee has no photo!");
-        //        }
-
-        //        Photo result = photoOpt.orElseThrow(() -> new NoPhotoEmployeeException("Employee has no photo!"));
-
-        //        System.err.println("!!!!!!!!!!!!!!!!!! photo = " + photo);
-
-
-        Optional<Photo> result = photoOpt;
-
-        log.debug(LOG_END + "Photo getPhoto(Integer employeeId = {}): result = {}", employeeId, result);
-        System.err.println(LOG_END + "Photo getPhoto(Integer employeeId = {}): result = " + result);
-
+                .filter(photo -> photo.getIsActive() == Boolean.TRUE)
+                .findFirst();
+        log.debug(LOG_END + "Optional<Photo> getEmployeeActivePhoto(Integer employeeId = {}): result = {}",
+                employeeId, result);
         return result;
     }
 
     //----------------------------------------------------------------------------------------------------
     @Override
-    public Employee addPhoto(Integer id, MultipartFile file) {
-
-        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
-        Photo photo = null;
-        try {
-            photo = new Photo();
-            photo.setFileName(fileName);
-            photo.setFileType(file.getContentType());
-            photo.setData(file.getBytes());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        Employee employee = employeeRepository.findById(id)
-                .orElseThrow(() -> new NoSuchEmployeeException("There is no employee with ID=" + id + " in database"));
-        employee.getPhotos().add(photo);
+    public Employee addPhoto(Integer employeeId, Photo newPhoto) {
+        log.debug(LOG_START + "Employee addPhoto(Integer employeeId = {}, Photo photo = {})", employeeId, newPhoto);
+        //Будем исходить из того, что заполнение этих полей сущности относиться больше к логике:
+        newPhoto.setIsActive(Boolean.TRUE);
+        newPhoto.setAddDate(LocalDateTime.now());
+        Employee employee = employeeRepository.findById(employeeId)
+                .orElseThrow(() -> new NoSuchEmployeeException(
+                        "There is no employee with ID=" + employeeId + " in database"));
+        employee.getPhotos().forEach(photo -> photo.setIsActive(Boolean.FALSE));
+        employee.getPhotos().add(newPhoto);
         Employee result = employeeRepository.save(employee);
-
+        log.debug(LOG_END + "Employee addPhoto(Integer employeeId = {}, Photo photo = {}) result = {}",
+                employeeId, newPhoto, result);
         return result;
     }
 
@@ -172,13 +120,6 @@ public class EmployeeServiceBean implements EmployeeService {
             if (employee.getPhotos() != null && !employee.getPhotos().equals(e.getPhotos())) {
                 e.setPhotos(employee.getPhotos());
             }
-            //todo:
-            // Код выше (как я понимаю, реализует patch, не put, лайтово мержит), што-то мне подсказывает,
-            // можно не писать для каждой сущности, а написать некую утилиту c методом, который принимает
-            // описание класса сущности (напр, Employee.class) + саму сущность и с помощью рефлексии
-            // бегает по полям, проверяетЮ, сетит.
-            // Еще что-то мне подсказывает, что у спринга должна быть какая-то дефолтная реализация подобного(?)
-            //                    log.debug("updateById(Integer id, Employee employee) Service end: e = {}", e);
             Employee result = employeeRepository.save(e);
             log.debug(LOG_END + "Employee patchEmployee(Integer id, Employee employee): result = {}", result);
             return result;
@@ -274,11 +215,10 @@ public class EmployeeServiceBean implements EmployeeService {
     public Set<String> getAllEmployeesCountries() {
         log.debug(LOG_START + "List<String> getAllEmployeesCountries()");
         Set<Employee> employeeList = new HashSet<>(employeeRepository.findAll());
-        Set<String> result = employeeList.stream().map(country -> country.getCountry()).collect(Collectors.toSet());
+        Set<String> result = employeeList.stream().map(Employee::getCountry).collect(Collectors.toSet());
         log.debug(LOG_END + "List<String> getAllEmployeesCountries(): result = {}", result);
         return result;
     }
-
 
     //----------------------------------------------------------------------------------------------------
     @Override
@@ -291,18 +231,16 @@ public class EmployeeServiceBean implements EmployeeService {
         return result;
     }
 
-
     //----------------------------------------------------------------------------------------------------
     @Override
     public Optional<List<String>> getEmails() {
         log.debug(LOG_START + "Optional<List<String>> getEmails()");
         List<Employee> employeeList = employeeRepository.findAll();
         List<String> emails = employeeList.stream().map(Employee::getEmail).collect(Collectors.toList());
-        Optional<List<String>> result = Optional.ofNullable(emails);
+        Optional<List<String>> result = Optional.of(emails);
         log.debug(LOG_END + "Optional<String> getEmails(): result = {}", result);
         return result;
     }
-
 
     //----------------------------------------------------------------------------------------------------
     @Override
@@ -317,7 +255,6 @@ public class EmployeeServiceBean implements EmployeeService {
         return result;
     }
 
-
     //----------------------------------------------------------------------------------------------------
     @Override
     public Page<Employee> getEmployeesWithActiveAddressesInCountry(String country, Pageable pageable) {
@@ -328,7 +265,6 @@ public class EmployeeServiceBean implements EmployeeService {
                   "Pageable pageable): result = {}", result);
         return result;
     }
-
 
     //---------------------------------------------------------------------------------------
     @Override
@@ -367,7 +303,6 @@ public class EmployeeServiceBean implements EmployeeService {
         log.debug(LOG_END + "List<Employee> handleEmployeesWithIsPrivateFieldIsNull(): result = {}", result);
         return result;
     }
-
 
     //---------------------------------------------------------------------------------------
     @Override public Page<Employee> getAllActive(Pageable pageable) {
@@ -444,12 +379,9 @@ public class EmployeeServiceBean implements EmployeeService {
                 .stream()
                 .filter(employee -> employee.getPhotos().stream().flatMap(photo -> Stream.of(isPhotoExpired(photo)))
                         .anyMatch(Boolean.TRUE::equals)).collect(Collectors.toList());
-
-        //.findAll(), если ничего не находит, возвращает пустой список; поидее null бытьне может.
         if (result.isEmpty()) {
             throw new NoSuchEmployeeException("There are no employees with expired photos");
         }
-        //        return Optional.of(result)
         log.debug(LOG_END + "List<Employee> findEmployeesWithExpiredPhotos(): result = {}", result);
         return result;
     }
@@ -458,7 +390,7 @@ public class EmployeeServiceBean implements EmployeeService {
     @Override
     public void sendEmailToEmployeesWhosePhotoIsExpired() {
         log.debug(LOG_START + "void sendEmailToEmployeesWhosePhotoIsExpired()");
-        findEmployeesWithExpiredPhotos().stream().forEach(e -> mailer.send(e, "subject",
+        findEmployeesWithExpiredPhotos().forEach(e -> mailer.send(e, "subject",
                 "Пожалуйста, нажмите на ссылку ниже, чтобы подтвердить свою регистрацию:\n" +
                 "<a href=\"http://localhost:8087/api/users/" + e.getId() + "/confirmed>Подтвердить регистрацию</a>\n" +
                 "Если вы не регистрировались на нашем сайте, проигнорируйте это сообщение.\n"));
