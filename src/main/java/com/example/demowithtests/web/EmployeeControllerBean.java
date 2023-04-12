@@ -9,9 +9,12 @@ import com.example.demowithtests.dto.employee.EmployeePutDto;
 import com.example.demowithtests.dto.employee.EmployeeReadDto;
 import com.example.demowithtests.dto.photo.PhotoReadDto;
 import com.example.demowithtests.service.EmployeeService;
+import com.example.demowithtests.util.exception.InvalidFileFormatException;
+import com.example.demowithtests.util.exception.InvalidFileSizeException;
 import com.example.demowithtests.util.exception.NoPhotoEmployeeException;
 import com.example.demowithtests.util.mapper.EmployeeMapper;
 import com.example.demowithtests.util.mapper.PhotoMapper;
+import com.example.demowithtests.util.validation.annotation.constraints.PhotoFileConstraint;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -52,19 +55,33 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     //---------------------------------------------------------------------------------------
     @Override
     @PatchMapping("/{employeeId}/uploadPhoto")
-    public EmployeeReadDto uploadPhoto(@PathVariable Integer employeeId, @RequestParam("file") MultipartFile file) {
+    public EmployeeReadDto uploadPhoto(@PathVariable Integer employeeId,
+            @RequestParam("file") @Valid @PhotoFileConstraint("image/jpeg") MultipartFile file) {
         log.info(LOG_START + "ResponseEntity<String> uploadPhoto(Integer employeeId = {}, MultipartFile file = {})",
                 employeeId, file);
+        String fileType = file.getContentType();
+        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
+        byte[] content;
+        try {
+            content = file.getBytes();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        //MultipartFile - это интерфейс, поэтому фокус @Valid перд ним, как перед параметром метода, не проходит.
+        //  Можно валидировать с помощью АОП, но.... будем проще:
+        if (!"image/jpeg".equals(fileType)) {
+            throw new InvalidFileFormatException("Wrong file format. Please send us a JPEG file.");
+        }
+        if (content.length / 1024 > 100) {
+            throw new InvalidFileSizeException("Invalid file size. The file should not exceed 100 kb.");
+        }
 
         Photo newPhoto = new Photo();
-        String fileName = StringUtils.cleanPath(file.getOriginalFilename());
         newPhoto.setFileName(fileName);
         newPhoto.setFileType(file.getContentType());
-        try {
-            newPhoto.setData(file.getBytes());
-        } catch (IOException e) {
-            throw new RuntimeException(e);//!!todo
-        }
+        newPhoto.setData(content);
+
         Employee updatedEmployee = employeeService.addPhoto(employeeId, newPhoto);
         EmployeeReadDto result = employeeMapper.employeeToEmployeeReadDto(updatedEmployee);
         log.info(LOG_END + "ResponseEntity<String> uploadPhoto(Integer employeeId = {}, MultipartFile file = {}):" +
@@ -384,6 +401,7 @@ public class EmployeeControllerBean implements EmployeeControllerApiDoc {
     }
 
     //---------------------------------------------------------------------------------------
+
     /**
      * Метод отправляет на почту юзера письмо с запросом на подтверждение.
      * Из письма юзер должен дернуть эндпоинт "/users/{id}/confirmed" (ссылка в тексте письма специальная),

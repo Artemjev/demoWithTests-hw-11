@@ -25,7 +25,7 @@ public class PhotoReadDto {
     @Schema(description = "Name of file.", example = "my-photo", required = true)
     public String fileName;
 
-    @PhotoFileConstraint(value = "image/jpeg")
+//    @PhotoFileConstraint(value = "image/jpeg")
     @Schema(description = "Type of file.", example = "jpeg", required = true)
     public String fileType;
 

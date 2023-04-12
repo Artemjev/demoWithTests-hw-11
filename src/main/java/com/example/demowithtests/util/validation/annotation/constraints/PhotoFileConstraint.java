@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 
 //!!!!!!!!!!!!!!!!!!!    Currently not in use! !!!!!!!!!!!!!
 
-@Target(ElementType.FIELD)
+@Target({ElementType.PARAMETER})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = PhotoFileValidator.class)
 public @interface PhotoFileConstraint {

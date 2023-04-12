@@ -10,8 +10,28 @@ import org.springframework.web.context.request.WebRequest;
 
 import java.util.Date;
 
+
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    @ExceptionHandler(InvalidFileSizeException.class)
+    public ResponseEntity<?> InvalidFileSizeException(InvalidFileSizeException exception,
+            WebRequest request) {
+        ErrorDetails errorDetails = new ErrorDetails(new Date(),
+                exception.getMessage(),
+                request.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.EXPECTATION_FAILED);
+    }
+
+
+    @ExceptionHandler(InvalidFileFormatException.class)
+    public ResponseEntity<?> InvalidFileFormatException(InvalidFileFormatException exception,
+            WebRequest request) {
+        ErrorDetails errorDetails = new ErrorDetails(new Date(),
+                exception.getMessage(),
+                request.getDescription(false));
+        return new ResponseEntity<>(errorDetails, HttpStatus.EXPECTATION_FAILED);
+    }
 
     @ExceptionHandler(NoPhotoEmployeeException.class)
     public ResponseEntity<?> NoPhotoEmployeeException(NoPhotoEmployeeException exception,

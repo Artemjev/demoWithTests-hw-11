@@ -16,11 +16,15 @@ public class PhotoFileValidator implements ConstraintValidator<PhotoFileConstrai
     public void initialize(PhotoFileConstraint constraintAnnotation) {
         ConstraintValidator.super.initialize(constraintAnnotation);
         fileType = constraintAnnotation.value();
+        System.err.println("!!!!!!!!!!!!!!!!!  initialize  fileType = " + fileType);
     }
 
     @Override
     public boolean isValid(MultipartFile validatedFile, ConstraintValidatorContext context) {
-        //        return fileType.equals(validatedFile.getContentType());
-        return "image/jpeg".equals(validatedFile.getContentType());
+
+
+//        return "image/jpeg".equals(validatedFile.getContentType());
+                return fileType.equals(validatedFile.getContentType());
+
     }
 }
